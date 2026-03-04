@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-device="{{ device }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>KALE PRAIA — Painel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --preto: #000000;
+    --palha: #f4eee3;
+    --branco: #ffffff;
+    --dourado: #d7bf91;
+    --dourado-escuro: #c5ad7f;
+    --dourado-claro: #e8d9b8;
+    --cinza: #6b6b6b;
+    --sidebar-w: 260px;
+    --topbar-h: 64px;
+    --bottomnav-h: 68px;
+    --radius: 12px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.07);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.13);
+    --tap-min: 48px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--palha);
+    color: var(--preto);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overscroll-behavior: none;
+  }
+
+  /* ════════════════════════════════
+     LAYOUT BASE (Desktop)
+  ════════════════════════════════ */
+  .app-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--preto);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0; top: 0;
+    z-index: 200;
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    will-change: transform;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(215,191,145,0.15);
+  }
+
+  .logo-mark { display: flex; align-items: center; gap: 11px; }
+
+  .logo-spiral { width: 40px; height: 40px; flex-shrink: 0; }
+
+  .logo-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; font-weight: 900;
+    color: var(--branco);
+    letter-spacing: 0.06em; line-height: 1;
+  }
+
+  .logo-sub {
+    font-size: 9px; color: var(--dourado);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-top: 3px; font-weight: 600;
+  }
+
+  .sidebar-nav { padding: 16px 14px; flex: 1; overflow-y: auto; }
+
+  .nav-section-label {
+    font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(215,191,145,0.45); padding: 0 10px;
+    margin: 18px 0 6px; font-weight: 700;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 12px 12px; border-radius: 8px; cursor: pointer;
+    color: rgba(255,255,255,0.5); font-size: 14px; font-weight: 500;
+    transition: all 0.18s ease; margin-bottom: 1px;
+    min-height: var(--tap-min);
+    text-decoration: none; user-select: none;
+  }
+
+  .nav-item:hover { background: rgba(215,191,145,0.1); color: var(--dourado); }
+
+  .nav-item.active { background: var(--dourado); color: var(--preto); }
+
+  .nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: rgba(215,191,145,0.2); color: var(--dourado);
+    font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 700;
+  }
+  .nav-item.active .nav-badge { background: rgba(0,0,0,0.15); color: var(--preto); }
+
+  .sidebar-footer {
+    padding: 16px 14px;
+    border-top: 1px solid rgba(215,191,145,0.12);
+  }
+
+  .admin-info {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .admin-avatar {
+    width: 34px; height: 34px; background: var(--dourado);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: 13px;
+    color: var(--preto); flex-shrink: 0;
+  }
+
+  .admin-name { font-size: 13px; font-weight: 600; color: var(--branco); }
+  .admin-role { font-size: 10px; color: rgba(255,255,255,0.38); }
+
+  /* ─── MAIN ─── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1; min-height: 100vh;
+    display: flex; flex-direction: column;
+    transition: margin 0.3s;
+  }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    background: var(--branco);
+    height: var(--topbar-h);
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .hamburger {
+    display: none;
+    background: none; border: none; cursor: pointer;
+    padding: 8px; border-radius: 8px;
+    color: var(--preto); min-width: var(--tap-min); min-height: var(--tap-min);
+    align-items: center; justify-content: center;
+  }
+
+  .hamburger:active { background: var(--palha); }
+
+  .topbar-title h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 700;
+  }
+
+  .topbar-title p { font-size: 12px; color: var(--cinza); margin-top: 1px; }
+
+  .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 18px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: none; transition: all 0.18s ease;
+    font-family: 'DM Sans', sans-serif;
+    min-height: var(--tap-min);
+  }
+
+  .btn-primary { background: var(--dourado); color: var(--preto); }
+  .btn-primary:hover { background: var(--dourado-escuro); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-secondary { background: var(--preto); color: var(--branco); }
+  .btn-secondary:active { transform: scale(0.97); }
+
+  .btn-ghost {
+    background: transparent; color: var(--cinza);
+    border: 1.5px solid rgba(0,0,0,0.1);
+  }
+  .btn-ghost:hover { background: var(--palha); color: var(--preto); }
+
+  .btn-fab {
+    position: fixed;
+    bottom: calc(var(--bottomnav-h) + 16px);
+    right: 20px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--preto);
+    color: var(--dourado);
+    font-size: 24px;
+    display: none;
+    align-items: center; justify-content: center;
+    border: none; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 150;
+    transition: transform 0.2s;
+  }
+
+  .btn-fab:active { transform: scale(0.93); }
+
+  /* ─── CONTENT ─── */
+  .content { padding: 24px 28px; flex: 1; }
+
+  /* ─── PAGES ─── */
+  .page { display: none; animation: fadeIn 0.25s ease; }
+  .page.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── STATS ─── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px; margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--branco); border-radius: var(--radius);
+    padding: 20px; box-shadow: var(--shadow);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+
+  .stat-card:active { transform: scale(0.98); }
+
+  .stat-card::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 3px;
+    background: var(--dourado);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover::after { transform: scaleX(1); }
+
+  .stat-icon {
+    position: absolute; top: 16px; right: 16px;
+    width: 34px; height: 34px; background: var(--dourado-claro);
+    border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px;
+  }
+
+  .stat-label {
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--cinza); font-weight: 700; margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; line-height: 1;
+  }
+
+  .stat-sub { font-size: 11px; color: var(--cinza); margin-top: 5px; }
+
+  .stat-trend {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 11px; font-weight: 700; padding: 2px 6px;
+    border-radius: 4px; margin-top: 6px;
+  }
+
+  .trend-up { background: #e8f5e9; color: #2e7d32; }
+  .trend-down { background: #fce4ec; color: #c62828; }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 16px;
+    flex-wrap: wrap; gap: 10px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px; font-weight: 700;
+  }
+
+  .section-sub { font-size: 12px; color: var(--cinza); margin-top: 2px; }
+
+  /* ─── WEEK NAV ─── */
+  .week-nav {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--branco); padding: 6px 14px;
+    border-radius: 8px; box-shadow: var(--shadow);
+  }
+
+  .week-nav button {
+    background: none; border: none; cursor: pointer;
+    padding: 6px 10px; border-radius: 6px;
+    color: var(--cinza); font-size: 16px;
+    min-width: var(--tap-min); min-height: var(--tap-min);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .week-nav button:hover { background: var(--palha); color: var(--preto); }
+  .week-nav button:active { transform: scale(0.92); }
+
+  .week-label { font-size: 13px; font-weight: 600; min-width: 160px; text-align: center; }
+
+  /* ─── GRADE ─── */
+  .grade-container {
+    background: var(--branco); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden; margin-bottom: 24px;
+  }
+
+  .grade-tabs {
+    display: flex; border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding: 0 16px; background: var(--branco); overflow-x: auto;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+
+  .grade-tabs::-webkit-scrollbar { display: none; }
+
+  .grade-tab {
+    padding: 13px 18px; font-size: 13px; font-weight: 600;
+    cursor: pointer; color: var(--cinza);
+    border-bottom: 2px solid transparent; transition: all 0.18s;
+    white-space: nowrap; user-select: none;
+    min-height: var(--tap-min); display: flex; align-items: center;
+  }
+
+  .grade-tab.active { color: var(--preto); border-bottom-color: var(--dourado); }
+
+  .grade-legend {
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 16px; border-bottom: 1px solid rgba(0,0,0,0.06);
+    background: var(--palha); overflow-x: auto;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+
+  .grade-legend::-webkit-scrollbar { display: none; }
+
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--cinza); white-space: nowrap; }
+
+  .legend-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+  .ld-disponivel { background: var(--branco); border: 2px solid var(--dourado); }
+  .ld-reservado { background: var(--palha); border: 1px solid #ccc; }
+  .ld-pago { background: var(--dourado); }
+  .ld-cancelado { background: #aaa; }
+
+  .grade-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  .grade-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+
+  .grade-table th {
+    padding: 9px 12px; font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase; font-weight: 700; color: var(--cinza);
+    background: var(--branco); border-bottom: 1px solid rgba(0,0,0,0.06);
+    text-align: center; white-space: nowrap;
+  }
+
+  .grade-table th:first-child { text-align: left; width: 70px; }
+
+  .hora-cell {
+    padding: 5px 12px; font-size: 11px; font-weight: 700;
+    color: var(--cinza); border-right: 1px solid rgba(0,0,0,0.06);
+    white-space: nowrap;
+  }
+
+  .slot { padding: 3px 5px; text-align: center; cursor: pointer; transition: all 0.12s; position: relative; }
+
+  .slot-inner {
+    border-radius: 6px; padding: 6px 3px;
+    font-size: 10px; font-weight: 600;
+    min-height: 42px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    transition: all 0.12s;
+  }
+
+  .slot:active .slot-inner { transform: scale(0.94); }
+
+  .s-disponivel .slot-inner { background: var(--branco); border: 2px solid var(--dourado); color: var(--dourado-escuro); }
+  .s-reservado .slot-inner { background: var(--palha); color: var(--cinza); }
+  .s-pago .slot-inner { background: var(--dourado); color: var(--preto); }
+  .s-cancelado .slot-inner { background: #ddd; color: #999; }
+
+  .slot-name { font-size: 9px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+  .slot-cat { font-size: 8px; opacity: 0.7; text-transform: uppercase; }
+  .slot-add { font-size: 18px; opacity: 0.35; font-weight: 300; }
+
+  /* ─── TABLE ─── */
+  .table-container {
+    background: var(--branco); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+
+  .table-header {
+    padding: 18px 20px; border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--palha); border-radius: 8px; padding: 10px 14px;
+    min-width: 220px;
+  }
+
+  .search-box input {
+    background: none; border: none; outline: none;
+    font-size: 13px; font-family: 'DM Sans', sans-serif; width: 100%;
+    color: var(--preto);
+  }
+
+  .search-box input::placeholder { color: var(--cinza); }
+
+  .filter-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+
+  .chip {
+    padding: 7px 13px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    cursor: pointer; border: 1.5px solid rgba(0,0,0,0.1); background: transparent;
+    color: var(--cinza); transition: all 0.15s; font-family: 'DM Sans', sans-serif;
+    min-height: 36px; display: flex; align-items: center;
+  }
+
+  .chip.active { background: var(--preto); color: var(--branco); border-color: var(--preto); }
+
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  .data-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+
+  .data-table th {
+    padding: 10px 14px; text-align: left; font-size: 10px;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--cinza);
+    font-weight: 700; background: var(--palha); border-bottom: 1px solid rgba(0,0,0,0.06);
+    white-space: nowrap;
+  }
+
+  .data-table td {
+    padding: 13px 14px; font-size: 13px;
+    border-bottom: 1px solid rgba(0,0,0,0.04); vertical-align: middle;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(244,238,227,0.35); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 9px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .b-pago { background: var(--dourado); color: var(--preto); }
+  .b-pago .badge-dot { background: var(--preto); }
+  .b-reservado { background: var(--palha); color: #666; }
+  .b-reservado .badge-dot { background: #aaa; }
+  .b-cancelado { background: rgba(0,0,0,0.07); color: #666; }
+  .b-cancelado .badge-dot { background: #aaa; }
+  .b-disponivel { background: rgba(215,191,145,0.2); color: #8a7040; }
+  .b-disponivel .badge-dot { background: var(--dourado); }
+
+  .cat-badge {
+    display: inline-block; padding: 3px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .cat-barragem { background: #000; color: var(--dourado); }
+  .cat-aluno { background: var(--dourado-claro); color: #5a4a20; }
+  .cat-nao-aluno { background: #eee; color: #555; }
+
+  .client-cell { display: flex; align-items: center; gap: 9px; }
+
+  .client-avatar-sm {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--dourado-claro); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #5a4a20; flex-shrink: 0;
+  }
+
+  .actions-cell { display: flex; gap: 5px; }
+
+  .btn-icon {
+    width: 32px; height: 32px; border-radius: 6px;
+    border: 1.5px solid rgba(0,0,0,0.1);
+    background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: all 0.15s;
+  }
+
+  .btn-icon:hover { background: var(--palha); border-color: var(--dourado); }
+  .btn-icon:active { transform: scale(0.9); }
+
+  /* ─── CLIENTES ─── */
+  .clients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  .client-card {
+    background: var(--branco); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+    transition: all 0.2s; cursor: pointer;
+  }
+
+  .client-card:active { transform: scale(0.98); }
+
+  .client-card-header {
+    background: var(--preto); padding: 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .client-avatar-lg {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--dourado); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 700; color: var(--preto); flex-shrink: 0;
+  }
+
+  .client-card-name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--branco); }
+  .client-card-phone { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+
+  .client-card-body { padding: 14px 18px; }
+
+  .client-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+  .cs-item { text-align: center; }
+  .cs-val { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; }
+  .cs-label { font-size: 9px; color: var(--cinza); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+  .mod-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .mod-tag { font-size: 10px; padding: 3px 7px; border-radius: 4px; background: var(--palha); color: var(--cinza); font-weight: 600; }
+
+  /* ─── BOTTOM NAV (mobile) ─── */
+  .bottom-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: var(--bottomnav-h);
+    background: var(--preto);
+    z-index: 200;
+    padding: 0 8px;
+    align-items: center; justify-content: space-around;
+    border-top: 1px solid rgba(215,191,145,0.15);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .bn-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 8px 16px; border-radius: 10px; cursor: pointer;
+    color: rgba(255,255,255,0.4); flex: 1; max-width: 80px;
+    transition: all 0.15s; min-height: var(--tap-min);
+    justify-content: center;
+  }
+
+  .bn-item.active { color: var(--dourado); }
+  .bn-item:active { transform: scale(0.93); }
+
+  .bn-icon { font-size: 22px; line-height: 1; }
+
+  .bn-label { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .bn-badge {
+    position: absolute; top: 4px; right: 10px;
+    background: var(--dourado); color: var(--preto);
+    font-size: 9px; font-weight: 800;
+    width: 16px; height: 16px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .bn-item-wrap { position: relative; display: flex; flex: 1; justify-content: center; }
+
+  /* ─── SIDEBAR OVERLAY ─── */
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 199;
+    backdrop-filter: blur(2px);
+  }
+
+  .sidebar-overlay.show { display: block; }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+    z-index: 999; display: none;
+    align-items: flex-end; justify-content: center;
+    padding: 0;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--branco); width: 100%; max-width: 500px;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 50px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s cubic-bezier(.4,0,.2,1);
+    max-height: 92vh; overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .modal-handle {
+    width: 40px; height: 4px; background: #ddd;
+    border-radius: 2px; margin: 12px auto 0; display: block;
+  }
+
+  .modal-header {
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+
+  .modal-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--palha); border: none; cursor: pointer;
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .modal-close:active { transform: scale(0.9); }
+
+  .modal-body { padding: 18px 24px; }
+
+  .form-group { margin-bottom: 14px; }
+
+  .form-label {
+    display: block; font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 700; color: var(--cinza); margin-bottom: 5px;
+  }
+
+  .form-control {
+    width: 100%; padding: 13px 14px; border-radius: 8px;
+    border: 1.5px solid rgba(0,0,0,0.1); font-size: 16px; /* 16px prevents iOS zoom */
+    font-family: 'DM Sans', sans-serif; outline: none;
+    background: var(--branco); transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .form-control:focus { border-color: var(--dourado); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .modal-footer {
+    padding: 12px 24px 20px;
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  /* ─── NOTIFICATION ─── */
+  .notification {
+    position: fixed; bottom: calc(var(--bottomnav-h) + 10px); right: 16px;
+    background: var(--preto); color: var(--branco);
+    padding: 13px 18px; border-radius: 10px; font-size: 13px; font-weight: 500;
+    box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 9px;
+    z-index: 9999; max-width: calc(100vw - 32px);
+    transform: translateY(80px); opacity: 0; transition: all 0.3s ease;
+  }
+
+  .notification.show { transform: translateY(0); opacity: 1; }
+
+  .notif-icon {
+    width: 22px; height: 22px; background: var(--dourado);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 11px; color: var(--preto); flex-shrink: 0;
+  }
+
+  /* ════════════════════════════════
+     TABLET (769–1024px)
+  ════════════════════════════════ */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    :root { --sidebar-w: 220px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .content { padding: 20px 20px; }
+  }
+
+  /* ════════════════════════════════
+     MOBILE (≤768px)
+  ════════════════════════════════ */
+  @media (max-width: 768px) {
+    :root { --sidebar-w: 260px; }
+
+    .sidebar { transform: translateX(-100%); box-shadow: none; }
+    .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+
+    .main { margin-left: 0; padding-bottom: var(--bottomnav-h); }
+
+    .hamburger { display: flex; }
+
+    .topbar { padding: 0 16px; }
+
+    .topbar-title h1 { font-size: 17px; }
+    .topbar-title p { display: none; }
+
+    .topbar-actions .btn-ghost { display: none; }
+    .topbar-actions .btn-primary { display: none; } /* use FAB */
+
+    .btn-fab { display: flex; }
+    .bottom-nav { display: flex; }
+
+    .content { padding: 16px 14px; }
+
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+
+    .stat-card { padding: 14px; }
+    .stat-value { font-size: 22px; }
+    .stat-icon { width: 28px; height: 28px; font-size: 13px; top: 12px; right: 12px; }
+
+    .section-header { flex-direction: column; align-items: flex-start; }
+    .week-nav { width: 100%; justify-content: space-between; }
+    .week-label { min-width: unset; }
+
+    .clients-grid { grid-template-columns: 1fr; }
+
+    .table-header { flex-direction: column; align-items: stretch; }
+    .search-box { min-width: unset; width: 100%; }
+
+    .modal-overlay { align-items: flex-end; }
+    .modal { border-radius: 20px 20px 0 0; max-width: 100%; }
+
+    .form-row { grid-template-columns: 1fr; gap: 0; }
+    .form-control { font-size: 16px; }
+
+    .notification { bottom: calc(var(--bottomnav-h) + 10px); left: 14px; right: 14px; max-width: unset; }
+  }
+
+  /* ════════════════════════════════
+     SMALL MOBILE (≤380px)
+  ════════════════════════════════ */
+  @media (max-width: 380px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-value { font-size: 20px; }
+    .stat-sub { display: none; }
+    .content { padding: 12px 12px; }
+  }
+
+  /* Safe area para iPhones com notch */
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .topbar { padding-top: 0; }
+    .bottom-nav { padding-bottom: max(env(safe-area-inset-bottom), 8px); height: calc(var(--bottomnav-h) + env(safe-area-inset-bottom)); }
+    .main { padding-bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom)); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Device info visível no console -->
+<script>
+  const DEVICE = "{{ device }}"; // detectado pelo servidor
+  console.log('🏖️ KALE PRAIA — Device:', DEVICE);
+  // Adiciona classe no body pra CSS extra se precisar
+  document.addEventListener('DOMContentLoaded', () => {
+    document.body.classList.add('device-' + DEVICE);
+  });
+</script>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-spiral">
+        <svg width="40" height="40" viewBox="0 0 42 42" fill="none">
+          <circle cx="21" cy="21" r="20" stroke="#d7bf91" stroke-width="1.5" opacity="0.25"/>
+          <path d="M21 8C14.4 8 9 13.4 9 20C9 25.5 12.5 30.2 17.5 32.2" stroke="#d7bf91" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M21 11C16 11 12 15 12 20C12 24.1 14.6 27.6 18.2 29" stroke="#d7bf91" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.55"/>
+          <path d="M21 14C17.7 14 15 16.7 15 20C15 22.7 16.7 25 19 26" stroke="#d7bf91" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.38"/>
+          <circle cx="21" cy="20" r="2.5" fill="#d7bf91"/>
+          <path d="M25 8.5C29.5 11.5 33 16 33 21.5C33 28.4 27.4 34 20.5 34" stroke="#d7bf91" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">KALE PRAIA</div>
+        <div class="logo-sub">Sistema de Reservas</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <a class="nav-item active" onclick="showPage('dashboard', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+      Dashboard
+    </a>
+    <a class="nav-item" onclick="showPage('grade', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Grade de Horários
+      <span class="nav-badge">12</span>
+    </a>
+    <a class="nav-item" onclick="showPage('reservas', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>
+      </svg>
+      Reservas
+      <span class="nav-badge">5</span>
+    </a>
+    <a class="nav-item" onclick="showPage('clientes', this)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+      </svg>
+      Clientes
+    </a>
+
+    <div class="nav-section-label">Módulos</div>
+    <a class="nav-item" onclick="showNotif('Financeiro em breve 💰')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="1" x2="12" y2="23"/>
+        <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+      </svg>
+      Financeiro
+    </a>
+    <a class="nav-item" onclick="showNotif('WhatsApp Bot em breve 🤖')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
+      WhatsApp Bot
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="admin-info">
+      <div class="admin-avatar">E</div>
+      <div>
+        <div class="admin-name">Erika</div>
+        <div class="admin-role">Administradora</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="topbar-title">
+        <h1 id="page-title">Dashboard</h1>
+        <p id="page-sub">Carregando...</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="showNotif('Relatório gerado! 📊')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+          <polyline points="17 6 23 6 23 12"/>
+        </svg>
+        Relatório
+      </button>
+      <button class="btn btn-primary" onclick="openModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nova Reserva
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card" onclick="showPage('grade', null)">
+          <div class="stat-icon">🏖️</div>
+          <div class="stat-label">Reservas Hoje</div>
+          <div class="stat-value">18</div>
+          <div class="stat-sub">de 24 slots</div>
+          <div class="stat-trend trend-up">↑ +3 ontem</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-label">Receita Hoje</div>
+          <div class="stat-value">R$1.840</div>
+          <div class="stat-sub">Meta: R$ 2.000</div>
+          <div class="stat-trend trend-up">↑ 92%</div>
+        </div>
+        <div class="stat-card" onclick="showPage('clientes', null)">
+          <div class="stat-icon">👥</div>
+          <div class="stat-label">Clientes</div>
+          <div class="stat-value">142</div>
+          <div class="stat-sub">+8 essa semana</div>
+          <div class="stat-trend trend-up">↑ +6%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">❌</div>
+          <div class="stat-label">Cancelamentos</div>
+          <div class="stat-value">2</div>
+          <div class="stat-sub">Multas: R$ 80</div>
+          <div class="stat-trend trend-down">+1 vs ontem</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Próximas Reservas</div>
+          <div class="section-sub">Hoje, 04 de Março de 2026</div>
+        </div>
+        <button class="btn btn-ghost" onclick="showPage('reservas', null)">Ver todas →</button>
+      </div>
+
+      <div class="table-container">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Horário</th>
+                <th>Quadra</th>
+                <th>Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="reservas-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ GRADE ═══ -->
+    <div class="page" id="page-grade">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Grade de Horários</div>
+          <div class="section-sub">Toque num slot para gerenciar</div>
+        </div>
+        <div class="week-nav">
+          <button onclick="changeWeek(-1)" aria-label="Semana anterior">←</button>
+          <span class="week-label" id="week-label">02–08 Mar 2026</span>
+          <button onclick="changeWeek(1)" aria-label="Próxima semana">→</button>
+        </div>
+      </div>
+
+      <div class="grade-container">
+        <div class="grade-tabs">
+          <div class="grade-tab active" onclick="selectQuadra(0, this)">🎾 Quadra 1</div>
+          <div class="grade-tab" onclick="selectQuadra(1, this)">🏐 Quadra 2</div>
+          <div class="grade-tab" onclick="selectQuadra(2, this)">⚽ Quadra 3</div>
+          <div class="grade-tab" onclick="selectQuadra(3, this)">🛶 Quadra 4</div>
+        </div>
+        <div class="grade-legend">
+          <div class="legend-item"><div class="legend-dot ld-disponivel"></div>Disponível</div>
+          <div class="legend-item"><div class="legend-dot ld-reservado"></div>Reservado</div>
+          <div class="legend-item"><div class="legend-dot ld-pago"></div>Confirmado</div>
+          <div class="legend-item"><div class="legend-dot ld-cancelado"></div>Cancelado</div>
+        </div>
+        <div class="grade-scroll">
+          <table class="grade-table" id="grade-table"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RESERVAS ═══ -->
+    <div class="page" id="page-reservas">
+      <div class="table-container">
+        <div class="table-header">
+          <div>
+            <div class="section-title" style="font-size:17px;">Todas as Reservas</div>
+            <div class="section-sub">10 registros</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-direction:column;">
+            <div class="search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" placeholder="Buscar cliente..." id="search-input" oninput="filterTable()" autocomplete="off">
+            </div>
+            <div class="filter-chips">
+              <button class="chip active" onclick="filterChip(this,'todos')">Todos</button>
+              <button class="chip" onclick="filterChip(this,'pago')">Pagos</button>
+              <button class="chip" onclick="filterChip(this,'reservado')">Pendentes</button>
+              <button class="chip" onclick="filterChip(this,'cancelado')">Cancelados</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Data/Hora</th>
+                <th>Quadra</th>
+                <th>Cat.</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="reservas-full-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CLIENTES ═══ -->
+    <div class="page" id="page-clientes">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Clientes</div>
+          <div class="section-sub">142 ativos</div>
+        </div>
+        <button class="btn btn-ghost" onclick="showNotif('Novo cliente em breve! 🚀')">+ Novo</button>
+      </div>
+      <div class="clients-grid" id="clients-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ BOTTOM NAV (mobile) ═══ -->
+<nav class="bottom-nav">
+  <div class="bn-item-wrap">
+    <div class="bn-item active" id="bn-dashboard" onclick="showPage('dashboard', null)">
+      <div class="bn-icon">📊</div>
+      <div class="bn-label">Dashboard</div>
+    </div>
+  </div>
+  <div class="bn-item-wrap">
+    <div class="bn-item" id="bn-grade" onclick="showPage('grade', null)">
+      <div class="bn-icon">📅</div>
+      <div class="bn-label">Grade</div>
+      <div class="bn-badge">12</div>
+    </div>
+  </div>
+  <div class="bn-item-wrap">
+    <div class="bn-item" id="bn-reservas" onclick="showPage('reservas', null)">
+      <div class="bn-icon">📋</div>
+      <div class="bn-label">Reservas</div>
+      <div class="bn-badge">5</div>
+    </div>
+  </div>
+  <div class="bn-item-wrap">
+    <div class="bn-item" id="bn-clientes" onclick="showPage('clientes', null)">
+      <div class="bn-icon">👥</div>
+      <div class="bn-label">Clientes</div>
+    </div>
+  </div>
+</nav>
+
+<!-- FAB (mobile) -->
+<button class="btn-fab" onclick="openModal()" aria-label="Nova Reserva">+</button>
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Nova Reserva</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input type="date" class="form-control" id="f-data">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horário</label>
+          <select class="form-control" id="f-horario">
+            <option>07:00</option><option>08:00</option><option>09:00</option>
+            <option>10:00</option><option>11:00</option><option>14:00</option>
+            <option>15:00</option><option>16:00</option><option>17:00</option>
+            <option>18:00</option><option>19:00</option><option>20:00</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quadra</label>
+        <select class="form-control" id="f-quadra">
+          <option>Quadra 1 — Beach Tennis</option>
+          <option>Quadra 2 — Vôlei de Praia</option>
+          <option>Quadra 3 — Futevôlei</option>
+          <option>Quadra 4 — Canoa Havaiana</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Categoria</label>
+        <select class="form-control" id="f-cat" onchange="updateValor()">
+          <option value="barragem">Barragem — R$ 100 / 1h30</option>
+          <option value="aluno">Aluno KALE — R$ 80 / 1h</option>
+          <option value="nao_aluno">Não Aluno — R$ 110 / 1h</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nome do Cliente</label>
+        <input type="text" class="form-control" placeholder="Nome completo" id="f-cliente" autocomplete="name">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">WhatsApp</label>
+          <input type="tel" class="form-control" placeholder="(61) 9xxxx-xxxx" id="f-phone" autocomplete="tel">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valor Total</label>
+          <input type="text" class="form-control" id="f-valor" value="R$ 100,00" readonly style="background:var(--palha);color:var(--cinza);">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveReserva()" style="flex:1;">✓ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notification" id="notification">
+  <div class="notif-icon">✓</div>
+  <span id="notif-text">OK!</span>
+</div>
+
+<script>
+// ─── DATA ───
+const CLIENTES = [
+  { nome: 'Ana Paula Costa', phone: '(61) 99123-0001', reservas: 12, gasto: 1320, cat: 'aluno', modalidades: ['Beach Tennis','Vôlei'] },
+  { nome: 'Bruno Martins', phone: '(61) 99123-0002', reservas: 8, gasto: 800, cat: 'aluno', modalidades: ['Beach Tennis'] },
+  { nome: 'Carla Ribeiro', phone: '(61) 99123-0003', reservas: 5, gasto: 1000, cat: 'barragem', modalidades: ['Canoa Havaiana','Futevôlei'] },
+  { nome: 'Diego Fonseca', phone: '(61) 99123-0004', reservas: 3, gasto: 330, cat: 'nao_aluno', modalidades: ['Vôlei','Beach Tennis'] },
+  { nome: 'Eduarda Lima', phone: '(61) 99123-0005', reservas: 20, gasto: 2200, cat: 'aluno', modalidades: ['Beach Tennis'] },
+  { nome: 'Felipe Santos', phone: '(61) 99123-0006', reservas: 7, gasto: 770, cat: 'aluno', modalidades: ['Futevôlei','Vôlei'] },
+  { nome: 'Gabriela Moura', phone: '(61) 99123-0007', reservas: 4, gasto: 440, cat: 'nao_aluno', modalidades: ['Beach Tennis'] },
+  { nome: 'Henrique Torres', phone: '(61) 99123-0008', reservas: 15, gasto: 1500, cat: 'barragem', modalidades: ['Canoa Havaiana'] },
+  { nome: 'Isabela Nunes', phone: '(61) 99123-0009', reservas: 6, gasto: 600, cat: 'aluno', modalidades: ['Vôlei'] },
+  { nome: 'João Carvalho', phone: '(61) 99123-0010', reservas: 9, gasto: 990, cat: 'aluno', modalidades: ['Beach Tennis','Futevôlei'] },
+];
+
+const RESERVAS = [
+  { id:'KP001', cliente:'Ana Paula Costa', data:'04/03/2026', hora:'08:00', quadra:'Quadra 1', cat:'aluno', valor:'R$ 80', status:'pago' },
+  { id:'KP002', cliente:'Bruno Martins', data:'04/03/2026', hora:'09:00', quadra:'Quadra 2', cat:'aluno', valor:'R$ 80', status:'pago' },
+  { id:'KP003', cliente:'Carla Ribeiro', data:'04/03/2026', hora:'10:00', quadra:'Quadra 1', cat:'barragem', valor:'R$ 100', status:'reservado' },
+  { id:'KP004', cliente:'Diego Fonseca', data:'04/03/2026', hora:'11:00', quadra:'Quadra 3', cat:'nao_aluno', valor:'R$ 110', status:'pago' },
+  { id:'KP005', cliente:'Eduarda Lima', data:'04/03/2026', hora:'14:00', quadra:'Quadra 2', cat:'aluno', valor:'R$ 80', status:'cancelado' },
+  { id:'KP006', cliente:'Felipe Santos', data:'05/03/2026', hora:'08:00', quadra:'Quadra 3', cat:'aluno', valor:'R$ 80', status:'reservado' },
+  { id:'KP007', cliente:'Gabriela Moura', data:'05/03/2026', hora:'09:00', quadra:'Quadra 1', cat:'nao_aluno', valor:'R$ 110', status:'pago' },
+  { id:'KP008', cliente:'Henrique Torres', data:'05/03/2026', hora:'10:00', quadra:'Quadra 4', cat:'barragem', valor:'R$ 100', status:'pago' },
+  { id:'KP009', cliente:'Isabela Nunes', data:'06/03/2026', hora:'17:00', quadra:'Quadra 2', cat:'aluno', valor:'R$ 80', status:'reservado' },
+  { id:'KP010', cliente:'João Carvalho', data:'06/03/2026', hora:'18:00', quadra:'Quadra 1', cat:'aluno', valor:'R$ 80', status:'pago' },
+];
+
+const HORARIOS = ['07:00','08:00','09:00','10:00','11:00','12:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+const DIAS_LABELS = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+const DIAS_KEYS = ['seg','ter','qua','qui','sex','sab','dom'];
+const STATUS_OPTS = ['pago','pago','pago','reservado','disponivel','disponivel','cancelado'];
+
+// Gera grade data
+const gradeData = {};
+for (let q = 0; q < 4; q++) {
+  gradeData[q] = {};
+  HORARIOS.forEach(h => {
+    gradeData[q][h] = {};
+    DIAS_KEYS.forEach(d => {
+      gradeData[q][h][d] = STATUS_OPTS[Math.floor(Math.random() * STATUS_OPTS.length)];
+    });
+  });
+}
+// Alguns slots fixos
+gradeData[0]['08:00']['ter'] = 'pago';
+gradeData[0]['09:00']['qua'] = 'reservado';
+gradeData[0]['10:00']['qui'] = 'disponivel';
+
+let currentQuadra = 0;
+let currentWeekOffset = 0;
+let filterStatus = 'todos';
+let currentPage = 'dashboard';
+
+// ─── PÁGINAS ───
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(n => n.classList.remove('active'));
+
+  document.getElementById('page-' + name).classList.add('active');
+  currentPage = name;
+
+  if (el) el.classList.add('active');
+
+  // Atualiza bottom nav
+  const bnEl = document.getElementById('bn-' + name);
+  if (bnEl) bnEl.classList.add('active');
+
+  const titles = { dashboard:'Dashboard', grade:'Grade de Horários', reservas:'Reservas', clientes:'Clientes' };
+  const subs = { dashboard:'Visão geral', grade:'Agendamentos por quadra', reservas:'Gerenciar reservas', clientes:'Base de clientes' };
+  document.getElementById('page-title').textContent = titles[name] || name;
+  document.getElementById('page-sub').textContent = subs[name] + ' — ' + new Date().toLocaleDateString('pt-BR', { day:'numeric', month:'short' });
+
+  if (name === 'grade') renderGrade();
+  closeSidebar();
+  window.scrollTo(0, 0);
+}
+
+// ─── SIDEBAR ───
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  const o = document.getElementById('sidebar-overlay');
+  s.classList.toggle('open');
+  o.classList.toggle('show');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+// ─── GRADE ───
+function selectQuadra(idx, el) {
+  document.querySelectorAll('.grade-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentQuadra = idx;
+  renderGrade();
+}
+
+function renderGrade() {
+  const table = document.getElementById('grade-table');
+  const dDates = ['02/03','03/03','04/03','05/03','06/03','07/03','08/03'];
+  const nomesPago = ['Ana P.','Bruno M.','Carla R.','Diego F.','Edu L.','Felipe S.','Gabi M.'];
+  const nomesRes = ['Isabela N.','João C.','Karen A.','Lucas B.'];
+
+  let html = '<thead><tr><th>Hora</th>';
+  DIAS_LABELS.forEach((d,i) => {
+    html += `<th>${d}<br><small style="font-size:9px;opacity:.5">${dDates[i]}</small></th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  const data = gradeData[currentQuadra];
+
+  HORARIOS.forEach(h => {
+    html += `<tr><td class="hora-cell">${h}</td>`;
+    DIAS_KEYS.forEach(d => {
+      const st = (data[h] && data[h][d]) ? data[h][d] : 'disponivel';
+      let inner = '';
+      if (st === 'disponivel') inner = `<div class="slot-add">+</div>`;
+      else if (st === 'pago') { const n = nomesPago[Math.floor(Math.random()*nomesPago.length)]; inner = `<div class="slot-name">${n}</div><div class="slot-cat">PAGO</div>`; }
+      else if (st === 'reservado') { const n = nomesRes[Math.floor(Math.random()*nomesRes.length)]; inner = `<div class="slot-name">${n}</div><div class="slot-cat">PEND.</div>`; }
+      else inner = `<div class="slot-cat" style="font-size:9px">CANCEL</div>`;
+      html += `<td class="slot s-${st}" onclick="slotClick('${h}','${d}','${st}')"><div class="slot-inner">${inner}</div></td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function slotClick(hora, dia, status) {
+  const msgs = {
+    disponivel: () => { openModal(); document.getElementById('f-horario').value = hora; },
+    pago: () => showNotif(`${hora} — Reserva confirmada ✅`),
+    reservado: () => showNotif(`${hora} — Aguardando pagamento ⏳`),
+    cancelado: () => showNotif(`${hora} — Cancelado ❌`),
+  };
+  (msgs[status] || (() => {}))();
+}
+
+function changeWeek(dir) {
+  currentWeekOffset += dir;
+  const base = new Date(2026, 2, 2 + currentWeekOffset * 7);
+  const end = new Date(base); end.setDate(end.getDate() + 6);
+  const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('week-label').textContent = `${fmt(base)}–${fmt(end)} ${end.getFullYear()}`;
+  renderGrade();
+}
+
+// ─── RESERVAS ───
+function renderReservas(data, tbodyId, compact) {
+  const catMap = { barragem:['cat-barragem','Barragem'], aluno:['cat-aluno','Aluno'], nao_aluno:['cat-nao-aluno','N.Aluno'] };
+  const stMap = { pago:['b-pago','Pago'], reservado:['b-reservado','Pendente'], cancelado:['b-cancelado','Cancelado'] };
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = data.map(r => {
+    const [cc,cn] = catMap[r.cat] || ['','?'];
+    const [sc,sn] = stMap[r.status] || ['','?'];
+    const initials = r.cliente.split(' ').slice(0,2).map(w=>w[0]).join('');
+    if (compact) {
+      return `<tr>
+        <td><div class="client-cell"><div class="client-avatar-sm">${initials}</div><div style="font-weight:600;font-size:12px;">${r.cliente.split(' ')[0]}</div></div></td>
+        <td style="font-size:11px;">${r.hora}</td>
+        <td style="font-size:11px;">${r.quadra.replace('Quadra ','Q')}</td>
+        <td style="font-weight:700;font-size:12px;">${r.valor}</td>
+        <td><span class="badge ${sc}"><div class="badge-dot"></div>${sn}</span></td>
+      </tr>`;
+    }
+    return `<tr>
+      <td><div class="client-cell"><div class="client-avatar-sm">${initials}</div><div><div style="font-weight:600;">${r.cliente}</div><div style="font-size:10px;color:#999;">#${r.id}</div></div></div></td>
+      <td><div style="font-weight:600;font-size:12px;">${r.data}</div><div style="font-size:11px;color:#999;">${r.hora}</div></td>
+      <td style="font-size:12px;">${r.quadra}</td>
+      <td><span class="cat-badge ${cc}">${cn}</span></td>
+      <td style="font-weight:700;">${r.valor}</td>
+      <td><span class="badge ${sc}"><div class="badge-dot"></div>${sn}</span></td>
+      <td><div class="actions-cell">
+        <button class="btn-icon" onclick="showNotif('Detalhes #${r.id} 📋')">👁️</button>
+        <button class="btn-icon" onclick="showNotif('WhatsApp enviado! 📱')">💬</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterChip(el, status) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filterStatus = status;
+  filterTable();
+}
+
+function filterTable() {
+  const q = (document.getElementById('search-input').value || '').toLowerCase();
+  const data = RESERVAS.filter(r => {
+    const ms = r.cliente.toLowerCase().includes(q) || r.quadra.toLowerCase().includes(q);
+    const mf = filterStatus === 'todos' || r.status === filterStatus;
+    return ms && mf;
+  });
+  renderReservas(data, 'reservas-full-body', false);
+}
+
+// ─── CLIENTES ───
+function renderClientes() {
+  const grid = document.getElementById('clients-grid');
+  const catMap = { barragem:'cat-barragem', aluno:'cat-aluno', nao_aluno:'cat-nao-aluno' };
+  const catLabel = { barragem:'Barragem', aluno:'Aluno KALE', nao_aluno:'Não Aluno' };
+  grid.innerHTML = CLIENTES.map(c => {
+    const initials = c.nome.split(' ').slice(0,2).map(w=>w[0]).join('');
+    const cc = catMap[c.cat];
+    const cl = catLabel[c.cat];
+    return `<div class="client-card" onclick="showNotif('Perfil: ${c.nome} 👤')">
+      <div class="client-card-header">
+        <div class="client-avatar-lg">${initials}</div>
+        <div>
+          <div class="client-card-name">${c.nome}</div>
+          <div class="client-card-phone">${c.phone}</div>
+        </div>
+      </div>
+      <div class="client-card-body">
+        <div class="client-stats">
+          <div class="cs-item"><div class="cs-val">${c.reservas}</div><div class="cs-label">Reservas</div></div>
+          <div class="cs-item"><div class="cs-val">${c.gasto > 999 ? 'R$'+Math.round(c.gasto/1000)+'k' : 'R$'+c.gasto}</div><div class="cs-label">Total</div></div>
+          <div class="cs-item"><div class="cs-val">R$${Math.round(c.gasto/c.reservas)}</div><div class="cs-label">Ticket</div></div>
+        </div>
+        <span class="cat-badge ${cc}" style="margin-bottom:8px;display:inline-block;">${cl}</span>
+        <div class="mod-tags">${c.modalidades.map(m=>`<span class="mod-tag">${m}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── MODAL ───
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('f-data').value = new Date().toISOString().split('T')[0];
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function closeModalOutside(e) {
+  if (e.target.id === 'modal-overlay') closeModal();
+}
+
+function updateValor() {
+  const v = { barragem:'R$ 100,00', aluno:'R$ 80,00', nao_aluno:'R$ 110,00' };
+  document.getElementById('f-valor').value = v[document.getElementById('f-cat').value];
+}
+
+function saveReserva() {
+  const nome = document.getElementById('f-cliente').value.trim();
+  if (!nome) { showNotif('Informe o nome do cliente ⚠️'); return; }
+  closeModal();
+  showNotif(`Reserva de ${nome.split(' ')[0]} criada! 🏖️`);
+}
+
+// ─── NOTIFICATION ───
+let notifT;
+function showNotif(msg) {
+  const el = document.getElementById('notification');
+  document.getElementById('notif-text').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(notifT);
+  notifT = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  document.getElementById('page-sub').textContent = 'Visão geral — ' + now.toLocaleDateString('pt-BR', { day:'numeric', month:'short' });
+  document.getElementById('f-data').value = now.toISOString().split('T')[0];
+  renderReservas(RESERVAS.slice(0,6), 'reservas-body', true);
+  renderReservas(RESERVAS, 'reservas-full-body', false);
+  renderClientes();
+  renderGrade();
+
+  // Swipe para abrir sidebar no mobile
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (touchStartX < 24 && dx > 60) toggleSidebar();
+    if (dx < -60 && document.getElementById('sidebar').classList.contains('open')) closeSidebar();
+  }, { passive: true });
+});
+</script>
+</body>
+</html>
