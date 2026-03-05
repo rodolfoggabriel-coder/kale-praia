@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta property="og:title" content="KALE PRAIA — Agendar Quadra">
+<meta property="og:description" content="Reserve sua quadra de areia agora! Beach Tennis, Vôlei, Futevôlei e Canoa Havaiana.">
+<title>KALE PRAIA — Agendar</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --preto: #000000;
+  --palha: #f4eee3;
+  --branco: #ffffff;
+  --dourado: #d7bf91;
+  --dourado-esc: #c5ad7f;
+  --dourado-claro: #e8d9b8;
+  --cinza: #6b6b6b;
+  --cinza-claro: #f0ebe0;
+  --radius: 14px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.14);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--preto);
+  color: var(--preto);
+  min-height: 100vh;
+}
+
+/* ── HERO ── */
+.hero {
+  background: var(--preto);
+  padding: 40px 24px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 120%, rgba(215,191,145,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.hero-spiral { width: 48px; height: 48px; }
+
+.hero-brand {
+  text-align: left;
+}
+
+.hero-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 900;
+  color: var(--branco);
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.hero-sub {
+  font-size: 10px; color: var(--dourado);
+  letter-spacing: 0.22em; text-transform: uppercase;
+  margin-top: 3px; font-weight: 600;
+}
+
+.hero-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 8vw, 42px);
+  font-weight: 900;
+  color: var(--branco);
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.hero-headline em {
+  font-style: italic;
+  color: var(--dourado);
+}
+
+.hero-desc {
+  font-size: 15px;
+  color: rgba(255,255,255,0.55);
+  max-width: 340px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+
+.hero-modalidades {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mod-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(215,191,145,0.3);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  background: rgba(215,191,145,0.07);
+}
+
+/* ── STEPS INDICATOR ── */
+.steps-container {
+  background: var(--palha);
+  padding: 0;
+}
+
+.steps-bar {
+  display: flex;
+  background: var(--branco);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.step-item {
+  flex: 1;
+  padding: 14px 8px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0,0,0,0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.step-item.active {
+  color: var(--preto);
+  background: var(--branco);
+}
+
+.step-item.done {
+  color: var(--dourado-esc);
+  background: var(--palha);
+}
+
+.step-num {
+  display: block;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.1);
+  color: rgba(0,0,0,0.4);
+  font-size: 11px; font-weight: 800;
+  margin: 0 auto 4px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+
+.step-item.active .step-num {
+  background: var(--preto);
+  color: var(--dourado);
+}
+
+.step-item.done .step-num {
+  background: var(--dourado);
+  color: var(--preto);
+  content: '✓';
+}
+
+.step-progress {
+  height: 3px;
+  background: var(--dourado);
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* ── FORM CONTAINER ── */
+.form-container {
+  background: var(--palha);
+  min-height: calc(100vh - 300px);
+  padding: 24px 16px 100px;
+}
+
+/* ── STEP PANELS ── */
+.step-panel { display: none; animation: fadeUp 0.3s ease; }
+.step-panel.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(12px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--branco);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.card-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px; font-weight: 700;
+}
+
+.card-sub { font-size: 12px; color: var(--cinza); margin-top: 2px; }
+
+.card-body { padding: 18px 20px; }
+
+/* ── MODALIDADE SELECTOR ── */
+.mod-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mod-btn {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px;
+  padding: 20px 12px;
+  border-radius: 10px;
+  border: 2px solid rgba(0,0,0,0.08);
+  background: var(--branco);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.mod-btn:active { transform: scale(0.96); }
+
+.mod-btn.selected {
+  border-color: var(--dourado);
+  background: var(--dourado-claro);
+}
+
+.mod-emoji { font-size: 32px; line-height: 1; }
+
+.mod-nome {
+  font-size: 13px; font-weight: 700;
+  color: var(--preto);
+}
+
+.mod-info { font-size: 10px; color: var(--cinza); }
+
+/* ── CATEGORIA ── */
+.cat-grid { display: flex; flex-direction: column; gap: 10px; }
+
+.cat-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 2px solid rgba(0,0,0,0.08);
+  background: var(--branco);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cat-btn:active { transform: scale(0.98); }
+.cat-btn.selected { border-color: var(--dourado); background: var(--dourado-claro); }
+
+.cat-left { display: flex; flex-direction: column; gap: 2px; }
+.cat-nome { font-size: 14px; font-weight: 700; }
+.cat-desc { font-size: 11px; color: var(--cinza); }
+
+.cat-preco {
+  text-align: right;
+}
+
+.cat-valor { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; }
+.cat-dur { font-size: 10px; color: var(--cinza); }
+
+/* ── QUADRA SELECTOR ── */
+.quadra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.quadra-btn {
+  padding: 16px;
+  border-radius: 10px;
+  border: 2px solid rgba(0,0,0,0.08);
+  background: var(--branco);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.quadra-btn.selected { border-color: var(--dourado); background: var(--dourado-claro); }
+.quadra-btn:active { transform: scale(0.96); }
+.quadra-num { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; }
+.quadra-label { font-size: 11px; color: var(--cinza); margin-top: 3px; }
+
+/* ── DATE PICKER ── */
+.semana-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.semana-nav button {
+  width: 40px; height: 40px;
+  border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.1);
+  background: var(--branco); cursor: pointer;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+
+.semana-nav button:active { transform: scale(0.9); }
+
+.semana-label { font-size: 13px; font-weight: 700; }
+
+.dias-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.dia-btn {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 10px 4px; border-radius: 10px;
+  border: 1.5px solid rgba(0,0,0,0.08);
+  background: var(--branco); cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dia-btn.selected { border-color: var(--dourado); background: var(--preto); }
+.dia-btn.selected .dia-nome { color: var(--dourado); }
+.dia-btn.selected .dia-num  { color: var(--branco); }
+.dia-btn.hoje { border-color: rgba(215,191,145,0.5); }
+.dia-btn:active { transform: scale(0.94); }
+
+.dia-nome { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cinza); }
+.dia-num  { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; margin-top: 2px; }
+
+/* ── HORÁRIOS ── */
+.horarios-titulo { font-size: 12px; font-weight: 700; color: var(--cinza); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+
+.horarios-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.hora-btn {
+  padding: 10px 4px; border-radius: 8px;
+  border: 1.5px solid rgba(0,0,0,0.08);
+  background: var(--branco); cursor: pointer;
+  font-size: 12px; font-weight: 700;
+  text-align: center; transition: all 0.15s;
+  color: var(--preto);
+}
+
+.hora-btn.selected { background: var(--preto); color: var(--dourado); border-color: var(--preto); }
+.hora-btn.ocupado  { background: #f5f5f5; color: #ccc; border-color: transparent; cursor: not-allowed; text-decoration: line-through; }
+.hora-btn:not(.ocupado):active { transform: scale(0.94); }
+
+.hora-livre-label { font-size: 9px; color: #4caf50; font-weight: 600; display: block; margin-top: 1px; }
+
+/* ── FORM INPUTS ── */
+.form-group { margin-bottom: 14px; }
+
+.form-label {
+  display: block; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 700; color: var(--cinza); margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%; padding: 14px 16px;
+  border-radius: 10px; border: 1.5px solid rgba(0,0,0,0.1);
+  font-size: 16px; font-family: 'DM Sans', sans-serif;
+  outline: none; background: var(--branco);
+  transition: border-color 0.2s; -webkit-appearance: none;
+  color: var(--preto);
+}
+
+.form-control:focus { border-color: var(--dourado); }
+
+/* ── RESUMO ── */
+.resumo-card {
+  background: var(--preto);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  margin-bottom: 16px;
+  color: var(--branco);
+}
+
+.resumo-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px; color: var(--dourado);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+}
+
+.resumo-linha {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.resumo-linha:last-child { border-bottom: none; padding-bottom: 0; }
+
+.resumo-key { font-size: 12px; color: rgba(255,255,255,0.5); }
+.resumo-val { font-size: 14px; font-weight: 700; color: var(--branco); }
+
+.resumo-total {
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid rgba(215,191,145,0.3);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.resumo-total-label { font-size: 13px; color: var(--dourado); font-weight: 600; }
+.resumo-total-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 700; color: var(--branco);
+}
+
+.politica-box {
+  background: var(--branco); border-radius: 10px;
+  padding: 16px; margin-bottom: 16px;
+  border: 1.5px solid rgba(0,0,0,0.06);
+}
+
+.politica-titulo { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cinza); margin-bottom: 10px; }
+
+.politica-item {
+  display: flex; gap: 8px; margin-bottom: 7px;
+  font-size: 12px; color: #444; line-height: 1.4;
+}
+
+/* ── BOTTOM BAR ── */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--branco);
+  padding: 14px 20px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(0,0,0,0.08);
+  display: flex; gap: 10px; align-items: center;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  z-index: 100;
+}
+
+.btn-voltar {
+  width: 48px; height: 48px;
+  border-radius: 10px; border: 1.5px solid rgba(0,0,0,0.1);
+  background: transparent; cursor: pointer;
+  font-size: 20px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0;
+}
+
+.btn-voltar:active { transform: scale(0.92); background: var(--palha); }
+
+.btn-avancar {
+  flex: 1; height: 52px;
+  border-radius: 12px; border: none;
+  background: var(--preto); color: var(--branco);
+  font-size: 15px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+.btn-avancar:active { transform: scale(0.97); }
+.btn-avancar:disabled { background: #ccc; cursor: not-allowed; }
+
+.btn-confirmar {
+  background: var(--dourado);
+  color: var(--preto);
+}
+
+/* ── SUCCESS ── */
+.success-screen {
+  display: none;
+  text-align: center;
+  padding: 48px 24px 120px;
+  background: var(--palha);
+  min-height: calc(100vh - 200px);
+}
+
+.success-screen.show { display: block; animation: fadeUp 0.5s ease; }
+
+.success-check {
+  width: 80px; height: 80px;
+  border-radius: 50%; background: var(--preto);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 36px;
+}
+
+.success-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.success-sub { font-size: 15px; color: var(--cinza); margin-bottom: 32px; line-height: 1.5; }
+
+.success-card {
+  background: var(--preto); color: var(--branco);
+  border-radius: var(--radius); padding: 24px 20px;
+  text-align: left; margin-bottom: 24px;
+  max-width: 360px; margin-left: auto; margin-right: auto;
+}
+
+.wpp-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; max-width: 360px; margin: 0 auto;
+  padding: 16px; border-radius: 12px;
+  background: #25D366; color: var(--branco);
+  font-size: 15px; font-weight: 700;
+  border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.wpp-btn:active { transform: scale(0.97); }
+
+/* ── LOADING ── */
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 16px;
+  font-size: 13px; color: var(--cinza);
+}
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-top-color: var(--dourado);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 90px; left: 16px; right: 16px;
+  background: var(--preto); color: var(--branco);
+  padding: 14px 18px; border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+  z-index: 999;
+  transform: translateY(20px); opacity: 0;
+  transition: all 0.3s ease; pointer-events: none;
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { font-size: 18px; flex-shrink: 0; }
+
+@media (min-width: 480px) {
+  .form-container { padding: 28px 24px 100px; }
+  .hero { padding: 48px 32px 56px; }
+  .mod-grid { grid-template-columns: repeat(4, 1fr); }
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .cat-btn { flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+}
+
+@media (min-width: 768px) {
+  body { max-width: 480px; margin: 0 auto; box-shadow: 0 0 60px rgba(0,0,0,0.2); min-height: 100vh; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-logo">
+    <div class="hero-spiral">
+      <svg width="48" height="48" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="20" stroke="#d7bf91" stroke-width="1.5" opacity="0.25"/>
+        <path d="M21 8C14.4 8 9 13.4 9 20C9 25.5 12.5 30.2 17.5 32.2" stroke="#d7bf91" stroke-width="2" stroke-linecap="round"/>
+        <path d="M21 11C16 11 12 15 12 20C12 24.1 14.6 27.6 18.2 29" stroke="#d7bf91" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+        <path d="M21 14C17.7 14 15 16.7 15 20C15 22.7 16.7 25 19 26" stroke="#d7bf91" stroke-width="1.5" stroke-linecap="round" opacity="0.35"/>
+        <circle cx="21" cy="20" r="2.5" fill="#d7bf91"/>
+        <path d="M25 8.5C29.5 11.5 33 16 33 21.5C33 28.4 27.4 34 20.5 34" stroke="#d7bf91" stroke-width="1.5" stroke-linecap="round" opacity="0.45"/>
+      </svg>
+    </div>
+    <div class="hero-brand">
+      <div class="hero-name">KALE PRAIA</div>
+      <div class="hero-sub">Arena de Areia</div>
+    </div>
+  </div>
+
+  <h1 class="hero-headline">Reserve sua<br><em>quadra agora</em></h1>
+  <p class="hero-desc">Escolha a modalidade, data e horário. Simples e rápido.</p>
+
+  <div class="hero-modalidades">
+    <span class="mod-pill">🎾 Beach Tennis</span>
+    <span class="mod-pill">🏐 Vôlei</span>
+    <span class="mod-pill">⚽ Futevôlei</span>
+    <span class="mod-pill">🛶 Canoa</span>
+  </div>
+</div>
+
+<!-- ══ STEPS BAR ══ -->
+<div class="steps-container" id="steps-container">
+  <div class="steps-bar">
+    <div class="step-item active" id="step-1">
+      <div class="step-num">1</div>
+      Modalidade
+    </div>
+    <div class="step-item" id="step-2">
+      <div class="step-num">2</div>
+      Data
+    </div>
+    <div class="step-item" id="step-3">
+      <div class="step-num">3</div>
+      Dados
+    </div>
+    <div class="step-item" id="step-4">
+      <div class="step-num">4</div>
+      Confirmar
+    </div>
+  </div>
+  <div class="step-progress" id="step-progress"></div>
+</div>
+
+<!-- ══ FORM ══ -->
+<div class="form-container" id="form-container">
+
+  <!-- STEP 1: MODALIDADE + CATEGORIA + QUADRA -->
+  <div class="step-panel active" id="panel-1">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Escolha a modalidade</div>
+        <div class="card-sub">Qual esporte você quer praticar?</div>
+      </div>
+      <div class="card-body">
+        <div class="mod-grid">
+          <button class="mod-btn" onclick="selecionarMod('beach_tennis', this)">
+            <div class="mod-emoji">🎾</div>
+            <div class="mod-nome">Beach Tennis</div>
+            <div class="mod-info">Quadras 1 e 2</div>
+          </button>
+          <button class="mod-btn" onclick="selecionarMod('volei', this)">
+            <div class="mod-emoji">🏐</div>
+            <div class="mod-nome">Vôlei de Praia</div>
+            <div class="mod-info">Quadras 1 e 2</div>
+          </button>
+          <button class="mod-btn" onclick="selecionarMod('futevolei', this)">
+            <div class="mod-emoji">⚽</div>
+            <div class="mod-nome">Futevôlei</div>
+            <div class="mod-info">Quadra 3</div>
+          </button>
+          <button class="mod-btn" onclick="selecionarMod('canoa', this)">
+            <div class="mod-emoji">🛶</div>
+            <div class="mod-nome">Canoa Havaiana</div>
+            <div class="mod-info">Quadra 4</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="card-categoria" style="display:none;">
+      <div class="card-header">
+        <div class="card-title">Sua categoria</div>
+        <div class="card-sub">Escolha seu tipo de reserva</div>
+      </div>
+      <div class="card-body">
+        <div class="cat-grid">
+          <button class="cat-btn" onclick="selecionarCat('barragem', this)">
+            <div class="cat-left">
+              <div class="cat-nome">🏷️ Barragem</div>
+              <div class="cat-desc">Reserva de quadra · 1h30</div>
+            </div>
+            <div class="cat-preco">
+              <div class="cat-valor">R$100</div>
+              <div class="cat-dur">sem hora extra</div>
+            </div>
+          </button>
+          <button class="cat-btn" onclick="selecionarCat('aluno_kale', this)">
+            <div class="cat-left">
+              <div class="cat-nome">⭐ Aluno KALE</div>
+              <div class="cat-desc">Aluno matriculado · 1h</div>
+            </div>
+            <div class="cat-preco">
+              <div class="cat-valor">R$80</div>
+              <div class="cat-dur">+R$50 hora extra</div>
+            </div>
+          </button>
+          <button class="cat-btn" onclick="selecionarCat('nao_aluno', this)">
+            <div class="cat-left">
+              <div class="cat-nome">👤 Avulso</div>
+              <div class="cat-desc">Não aluno · 1h</div>
+            </div>
+            <div class="cat-preco">
+              <div class="cat-valor">R$110</div>
+              <div class="cat-dur">+R$70 hora extra</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="card-quadra" style="display:none;">
+      <div class="card-header">
+        <div class="card-title">Escolha a quadra</div>
+        <div class="card-sub">Quadras disponíveis para sua modalidade</div>
+      </div>
+      <div class="card-body">
+        <div class="quadra-grid" id="quadra-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: DATA + HORÁRIO -->
+  <div class="step-panel" id="panel-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Escolha a data</div>
+        <div class="card-sub">Seg–Sex: 07h–21h · Sábado: 08h–12h</div>
+      </div>
+      <div class="card-body">
+        <div class="semana-nav">
+          <button onclick="mudarSemana(-1)" id="btn-semana-ant">←</button>
+          <span class="semana-label" id="semana-label">Semana atual</span>
+          <button onclick="mudarSemana(1)">→</button>
+        </div>
+        <div class="dias-grid" id="dias-grid"></div>
+      </div>
+    </div>
+
+    <div class="card" id="card-horarios" style="display:none;">
+      <div class="card-header">
+        <div class="card-title">Escolha o horário</div>
+        <div class="card-sub" id="horarios-sub">Horários disponíveis</div>
+      </div>
+      <div class="card-body">
+        <div id="horarios-loading" class="loading" style="display:none;">
+          <div class="spinner"></div> Verificando disponibilidade...
+        </div>
+        <div class="horarios-grid" id="horarios-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: DADOS DO CLIENTE -->
+  <div class="step-panel" id="panel-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Seus dados</div>
+        <div class="card-sub">Para confirmar a reserva</div>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Nome completo *</label>
+          <input type="text" class="form-control" id="f-nome" placeholder="Seu nome completo" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">WhatsApp *</label>
+          <input type="tel" class="form-control" id="f-telefone" placeholder="(61) 9xxxx-xxxx" autocomplete="tel">
+        </div>
+        <div class="form-group" id="grupo-hora-extra" style="display:none;">
+          <label class="form-label">Hora extra?</label>
+          <div style="display:flex;gap:10px;margin-top:4px;">
+            <button class="hora-btn" id="btn-extra-nao" onclick="toggleExtra(false)"
+              style="flex:1;padding:12px;font-size:13px;border-radius:10px;">
+              Não, só o tempo normal
+            </button>
+            <button class="hora-btn" id="btn-extra-sim" onclick="toggleExtra(true)"
+              style="flex:1;padding:12px;font-size:13px;border-radius:10px;">
+              Sim, +1h
+            </button>
+          </div>
+          <div style="font-size:11px;color:var(--cinza);margin-top:6px;" id="extra-valor-info"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: CONFIRMAR -->
+  <div class="step-panel" id="panel-4">
+    <div class="resumo-card">
+      <div class="resumo-logo">
+        <span>🏖️</span> KALE PRAIA — Resumo da Reserva
+      </div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Modalidade</span>
+        <span class="resumo-val" id="r-modalidade">—</span>
+      </div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Quadra</span>
+        <span class="resumo-val" id="r-quadra">—</span>
+      </div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Data</span>
+        <span class="resumo-val" id="r-data">—</span>
+      </div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Horário</span>
+        <span class="resumo-val" id="r-horario">—</span>
+      </div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Duração</span>
+        <span class="resumo-val" id="r-duracao">—</span>
+      </div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Categoria</span>
+        <span class="resumo-val" id="r-categoria">—</span>
+      </div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Cliente</span>
+        <span class="resumo-val" id="r-nome">—</span>
+      </div>
+      <div class="resumo-total">
+        <span class="resumo-total-label">Total a pagar</span>
+        <span class="resumo-total-val" id="r-total">—</span>
+      </div>
+    </div>
+
+    <div class="politica-box">
+      <div class="politica-titulo">📋 Política de cancelamento</div>
+      <div class="politica-item">✅ <span>Com 48h de antecedência: devolução integral</span></div>
+      <div class="politica-item">⚠️ <span>Menos de 48h: multa de R$ 40,00</span></div>
+      <div class="politica-item">🌧️ <span>Chuva forte: reagendamento automático sem custo</span></div>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-check">🏖️</div>
+    <div class="success-title">Reserva feita!</div>
+    <p class="success-sub">Sua reserva foi registrada.<br>Em breve entraremos em contato via WhatsApp para confirmar o pagamento.</p>
+
+    <div class="success-card">
+      <div class="resumo-logo" style="margin-bottom:16px;">🎾 Detalhes da reserva</div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Data</span>
+        <span class="resumo-val" id="s-data">—</span>
+      </div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Horário</span>
+        <span class="resumo-val" id="s-horario">—</span>
+      </div>
+      <div class="resumo-linha">
+        <span class="resumo-key">Quadra</span>
+        <span class="resumo-val" id="s-quadra">—</span>
+      </div>
+      <div class="resumo-total">
+        <span class="resumo-total-label">Total</span>
+        <span class="resumo-total-val" id="s-total">—</span>
+      </div>
+    </div>
+
+    <a class="wpp-btn" id="wpp-btn" href="#" target="_blank">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      Confirmar via WhatsApp
+    </a>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar" id="bottom-bar">
+  <button class="btn-voltar" id="btn-voltar" onclick="voltarStep()" style="display:none;">←</button>
+  <button class="btn-avancar" id="btn-avancar" onclick="avancarStep()" disabled>
+    Próximo →
+  </button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">⚠️</span>
+  <span id="toast-msg">Mensagem</span>
+</div>
+
+<script>
+// ════════════════════════════════
+// ESTADO
+// ════════════════════════════════
+const STATE = {
+  step: 1,
+  modalidade: null,
+  modalidadeLabel: null,
+  categoria: null,
+  quadra: null,
+  data: null,        // YYYY-MM-DD
+  dataLabel: null,
+  horario: null,
+  nome: '',
+  telefone: '',
+  horaExtra: false,
+  semanaOffset: 0,
+};
+
+const MODALIDADE_QUADRAS = {
+  beach_tennis: [1, 2],
+  volei:        [1, 2],
+  futevolei:    [3],
+  canoa:        [4],
+};
+
+const MODALIDADE_LABEL = {
+  beach_tennis: '🎾 Beach Tennis',
+  volei:        '🏐 Vôlei de Praia',
+  futevolei:    '⚽ Futevôlei',
+  canoa:        '🛶 Canoa Havaiana',
+};
+
+const CAT_LABEL = {
+  barragem:   '🏷️ Barragem',
+  aluno_kale: '⭐ Aluno KALE',
+  nao_aluno:  '👤 Avulso',
+};
+
+const CAT_EXTRA = {
+  barragem:   false,
+  aluno_kale: true,
+  nao_aluno:  true,
+};
+
+const CAT_EXTRA_VAL = {
+  aluno_kale: 50,
+  nao_aluno:  70,
+};
+
+function gerarSlots(inicio, fim) {
+  const slots = [];
+  let [h, m] = inicio.split(':').map(Number);
+  const [hf, mf] = fim.split(':').map(Number);
+  while (h < hf || (h === hf && m <= mf)) {
+    slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+    m += 30; if (m >= 60) { h++; m -= 60; }
+  }
+  return slots;
+}
+
+const SLOTS_SEMANA = gerarSlots('07:00', '21:00');
+const SLOTS_SABADO = gerarSlots('08:00', '12:00');
+
+// ════════════════════════════════
+// STEPS
+// ════════════════════════════════
+function updateUI() {
+  // Steps bar
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById(`step-${i}`);
+    el.className = 'step-item' + (i === STATE.step ? ' active' : i < STATE.step ? ' done' : '');
+  }
+  // Progress bar
+  document.getElementById('step-progress').style.width = `${((STATE.step - 1) / 3) * 100}%`;
+
+  // Panels
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById(`panel-${STATE.step}`);
+  if (panel) panel.classList.add('active');
+
+  // Botão voltar
+  document.getElementById('btn-voltar').style.display = STATE.step > 1 ? 'flex' : 'none';
+
+  // Botão avançar
+  const btn = document.getElementById('btn-avancar');
+  btn.disabled = !podeAvancar();
+  btn.className = 'btn-avancar' + (STATE.step === 4 ? ' btn-confirmar' : '');
+  btn.textContent = STATE.step === 4 ? '✓ Confirmar Reserva' : 'Próximo →';
+
+  // Preenche resumo no step 4
+  if (STATE.step === 4) preencherResumo();
+}
+
+function podeAvancar() {
+  if (STATE.step === 1) return STATE.modalidade && STATE.categoria && STATE.quadra;
+  if (STATE.step === 2) return STATE.data && STATE.horario;
+  if (STATE.step === 3) return STATE.nome.trim().length > 2 && STATE.telefone.trim().length > 7;
+  return true;
+}
+
+function avancarStep() {
+  if (!podeAvancar()) return;
+  if (STATE.step === 4) { confirmarReserva(); return; }
+  STATE.step++;
+  updateUI();
+  window.scrollTo(0, 0);
+}
+
+function voltarStep() {
+  if (STATE.step <= 1) return;
+  STATE.step--;
+  updateUI();
+  window.scrollTo(0, 0);
+}
+
+// ════════════════════════════════
+// STEP 1 — SELEÇÕES
+// ════════════════════════════════
+function selecionarMod(mod, el) {
+  STATE.modalidade = mod;
+  STATE.modalidadeLabel = MODALIDADE_LABEL[mod];
+  STATE.quadra = null;
+  document.querySelectorAll('.mod-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+
+  // Mostra categoria
+  document.getElementById('card-categoria').style.display = 'block';
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+  STATE.categoria = null;
+
+  // Esconde quadra até categoria ser escolhida
+  document.getElementById('card-quadra').style.display = 'none';
+  updateUI();
+}
+
+function selecionarCat(cat, el) {
+  STATE.categoria = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+
+  // Mostra quadras disponíveis
+  const quadras = MODALIDADE_QUADRAS[STATE.modalidade] || [];
+  const grid = document.getElementById('quadra-grid');
+  grid.innerHTML = quadras.map(q => `
+    <button class="quadra-btn" onclick="selecionarQuadra(${q}, this)">
+      <div class="quadra-num">${q}</div>
+      <div class="quadra-label">Quadra ${q}</div>
+    </button>
+  `).join('');
+
+  // Se só tem uma quadra, seleciona automaticamente
+  if (quadras.length === 1) {
+    STATE.quadra = quadras[0];
+    grid.querySelector('.quadra-btn').classList.add('selected');
+  }
+
+  document.getElementById('card-quadra').style.display = 'block';
+  updateUI();
+}
+
+function selecionarQuadra(q, el) {
+  STATE.quadra = q;
+  document.querySelectorAll('.quadra-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  updateUI();
+}
+
+// ════════════════════════════════
+// STEP 2 — DATA E HORÁRIO
+// ════════════════════════════════
+function renderDias() {
+  const hoje = new Date();
+  const seg  = new Date(hoje);
+  seg.setDate(hoje.getDate() - hoje.getDay() + 1 + STATE.semanaOffset * 7);
+
+  // Label da semana
+  const fim = new Date(seg); fim.setDate(seg.getDate() + 5);
+  const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('semana-label').textContent = `${fmt(seg)} – ${fmt(fim)}`;
+
+  // Botão anterior desabilitado se semana atual
+  document.getElementById('btn-semana-ant').disabled = STATE.semanaOffset <= 0;
+
+  const dias = ['Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const grid = document.getElementById('dias-grid');
+
+  grid.innerHTML = dias.map((label, i) => {
+    const d = new Date(seg); d.setDate(seg.getDate() + i);
+    const iso = d.toISOString().split('T')[0];
+    const ehHoje = iso === hoje.toISOString().split('T')[0];
+    const passado = d < new Date(hoje.setHours(0,0,0,0));
+    const selecionado = STATE.data === iso;
+
+    return `<button class="dia-btn ${ehHoje ? 'hoje' : ''} ${selecionado ? 'selected' : ''}"
+      onclick="${passado ? '' : `selecionarData('${iso}', '${label}', ${i === 5})`}"
+      style="${passado ? 'opacity:.3;cursor:not-allowed;' : ''}">
+      <div class="dia-nome">${label}</div>
+      <div class="dia-num">${d.getDate()}</div>
+    </button>`;
+  }).join('');
+}
+
+function mudarSemana(dir) {
+  if (STATE.semanaOffset + dir < 0) return;
+  STATE.semanaOffset += dir;
+  STATE.data = null;
+  STATE.horario = null;
+  document.getElementById('card-horarios').style.display = 'none';
+  renderDias();
+  updateUI();
+}
+
+async function selecionarData(iso, label, isSabado) {
+  STATE.data = iso;
+  STATE.dataLabel = label;
+  STATE.horario = null;
+  renderDias();
+
+  // Mostra horários
+  document.getElementById('card-horarios').style.display = 'block';
+  document.getElementById('horarios-sub').textContent = `${label} — ${iso.split('-').reverse().join('/')}`;
+  document.getElementById('horarios-loading').style.display = 'flex';
+  document.getElementById('horarios-grid').innerHTML = '';
+
+  // Busca disponibilidade da API
+  const slots = isSabado ? SLOTS_SABADO : SLOTS_SEMANA;
+  let ocupados = {};
+
+  try {
+    const semana = Math.floor(STATE.semanaOffset);
+    const res = await fetch(`/api/reservas/grade?quadra=${STATE.quadra}&semana=${semana}`);
+    const data = await res.json();
+    ocupados = (data.grade && data.grade[iso]) || {};
+  } catch(e) { /* offline: todos disponíveis */ }
+
+  document.getElementById('horarios-loading').style.display = 'none';
+
+  document.getElementById('horarios-grid').innerHTML = slots.map(h => {
+    const slot = ocupados[h];
+    const ocupado = slot && slot.status !== 'cancelado';
+    const selecionado = STATE.horario === h;
+    return `<button class="hora-btn ${ocupado ? 'ocupado' : ''} ${selecionado ? 'selected' : ''}"
+      onclick="${ocupado ? '' : `selecionarHorario('${h}')`}">
+      ${h}
+    </button>`;
+  }).join('');
+
+  updateUI();
+}
+
+function selecionarHorario(h) {
+  STATE.horario = h;
+  document.querySelectorAll('.hora-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+  updateUI();
+}
+
+// ════════════════════════════════
+// STEP 3 — DADOS
+// ════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('f-nome').addEventListener('input', e => {
+    STATE.nome = e.target.value;
+    updateUI();
+  });
+  document.getElementById('f-telefone').addEventListener('input', e => {
+    STATE.telefone = e.target.value;
+    updateUI();
+  });
+
+  renderDias();
+  updateUI();
+});
+
+function toggleExtra(sim) {
+  STATE.horaExtra = sim;
+  document.getElementById('btn-extra-sim').className = 'hora-btn' + (sim ? ' selected' : '');
+  document.getElementById('btn-extra-nao').className = 'hora-btn' + (!sim ? ' selected' : '');
+  const val = CAT_EXTRA_VAL[STATE.categoria] || 0;
+  document.getElementById('extra-valor-info').textContent = sim
+    ? `+ R$ ${val},00 pela hora extra`
+    : 'Sem hora extra — tempo padrão';
+  updateUI();
+}
+
+// Mostra hora extra se categoria permite (no step 3)
+function setupHoraExtra() {
+  const permite = CAT_EXTRA[STATE.categoria];
+  document.getElementById('grupo-hora-extra').style.display = permite ? 'block' : 'none';
+  if (!permite) STATE.horaExtra = false;
+  // Default: não
+  document.getElementById('btn-extra-nao').className = 'hora-btn selected';
+  document.getElementById('btn-extra-sim').className = 'hora-btn';
+}
+
+// Override avancarStep para setup hora extra no step 3
+const _avancarOrig = avancarStep;
+window.avancarStep = function() {
+  if (STATE.step === 2) setupHoraExtra();
+  _avancarOrig();
+}
+
+// ════════════════════════════════
+// STEP 4 — RESUMO
+// ════════════════════════════════
+function preencherResumo() {
+  const PRECOS = { barragem: 100, aluno_kale: 80, nao_aluno: 110 };
+  const DURACOES = { barragem: '1h30', aluno_kale: '1h', nao_aluno: '1h' };
+  const extra = STATE.horaExtra ? (CAT_EXTRA_VAL[STATE.categoria] || 0) : 0;
+  const total = (PRECOS[STATE.categoria] || 0) + extra;
+  const dur = DURACOES[STATE.categoria] + (STATE.horaExtra ? ' + 1h extra' : '');
+
+  document.getElementById('r-modalidade').textContent = STATE.modalidadeLabel || '—';
+  document.getElementById('r-quadra').textContent = `Quadra ${STATE.quadra}`;
+  document.getElementById('r-data').textContent = STATE.data ? STATE.data.split('-').reverse().join('/') : '—';
+  document.getElementById('r-horario').textContent = STATE.horario || '—';
+  document.getElementById('r-duracao').textContent = dur;
+  document.getElementById('r-categoria').textContent = CAT_LABEL[STATE.categoria] || '—';
+  document.getElementById('r-nome').textContent = STATE.nome;
+  document.getElementById('r-total').textContent = `R$ ${total.toFixed(2).replace('.',',')}`;
+}
+
+// ════════════════════════════════
+// CONFIRMAR RESERVA
+// ════════════════════════════════
+async function confirmarReserva() {
+  const btn = document.getElementById('btn-avancar');
+  btn.disabled = true;
+  btn.textContent = 'Aguarde...';
+
+  try {
+    // 1. Cria cliente
+    const cli = await fetch('/api/clientes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome: STATE.nome, telefone: STATE.telefone, categoria: STATE.categoria })
+    }).then(r => r.json());
+
+    if (cli.erro) { showToast('Erro: ' + cli.erro); btn.disabled = false; btn.textContent = '✓ Confirmar Reserva'; return; }
+
+    // 2. Cria reserva
+    const res = await fetch('/api/reservar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cliente_id: cli.id,
+        quadra:     STATE.quadra,
+        data:       STATE.data,
+        horario:    STATE.horario,
+        categoria:  STATE.categoria,
+        hora_extra: STATE.horaExtra,
+      })
+    }).then(r => r.json());
+
+    if (res.erro) { showToast('Erro: ' + res.erro); btn.disabled = false; btn.textContent = '✓ Confirmar Reserva'; return; }
+
+    // Sucesso!
+    mostrarSucesso(res);
+
+  } catch(e) {
+    showToast('Erro de conexão. Tente novamente.');
+    btn.disabled = false;
+    btn.textContent = '✓ Confirmar Reserva';
+  }
+}
+
+function mostrarSucesso(res) {
+  // Esconde tudo
+  document.getElementById('steps-container').style.display = 'none';
+  document.querySelectorAll('.step-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('bottom-bar').style.display = 'none';
+
+  // Preenche success
+  document.getElementById('s-data').textContent = STATE.data.split('-').reverse().join('/');
+  document.getElementById('s-horario').textContent = STATE.horario;
+  document.getElementById('s-quadra').textContent = `Quadra ${STATE.quadra} — ${STATE.modalidadeLabel}`;
+  document.getElementById('s-total').textContent = `R$ ${(res.valor_total||0).toFixed(2).replace('.',',')}`;
+
+  // Link WhatsApp
+  const msg = encodeURIComponent(
+    `Olá! Acabei de reservar:\n` +
+    `🏖️ *KALE PRAIA*\n` +
+    `📅 ${STATE.data.split('-').reverse().join('/')} às ${STATE.horario}\n` +
+    `🎾 ${STATE.modalidadeLabel} — Quadra ${STATE.quadra}\n` +
+    `💰 Total: R$ ${(res.valor_total||0).toFixed(2)}\n` +
+    `Reserva #${res.id}`
+  );
+  document.getElementById('wpp-btn').href = `https://wa.me/5561991234203?text=${msg}`;
+
+  document.getElementById('success-screen').classList.add('show');
+  window.scrollTo(0, 0);
+}
+
+// ════════════════════════════════
+// TOAST
+// ════════════════════════════════
+let toastT;
+function showToast(msg, icon = '⚠️') {
+  const el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-icon').textContent = icon;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

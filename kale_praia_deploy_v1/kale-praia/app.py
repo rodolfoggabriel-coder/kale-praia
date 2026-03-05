@@ -27,6 +27,10 @@ def index():
     device = detect_device(request.headers.get('User-Agent', ''))
     return render_template('index.html', device=device)
 
+@app.route('/agendar')
+def agendar():
+    return render_template('agendar.html')
+
 # ── CLIENTES ──
 
 @app.route('/api/clientes', methods=['GET'])
