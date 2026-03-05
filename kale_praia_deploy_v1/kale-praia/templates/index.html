@@ -870,7 +870,7 @@
       </button>
       <div class="topbar-title">
         <h1 id="page-title">Dashboard</h1>
-        <p id="page-sub">Carregando...</p>
+        <p id="page-sub">Visão geral</p>
       </div>
     </div>
     <div class="topbar-actions">
@@ -899,28 +899,28 @@
         <div class="stat-card" onclick="showPage('grade', null)">
           <div class="stat-icon">🏖️</div>
           <div class="stat-label">Reservas Hoje</div>
-          <div class="stat-value">18</div>
+          <div class="stat-value" id="stat-reservas">—</div>
           <div class="stat-sub">de 24 slots</div>
           <div class="stat-trend trend-up">↑ +3 ontem</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">💰</div>
           <div class="stat-label">Receita Hoje</div>
-          <div class="stat-value">R$1.840</div>
+          <div class="stat-value" id="stat-receita">—</div>
           <div class="stat-sub">Meta: R$ 2.000</div>
           <div class="stat-trend trend-up">↑ 92%</div>
         </div>
         <div class="stat-card" onclick="showPage('clientes', null)">
           <div class="stat-icon">👥</div>
           <div class="stat-label">Clientes</div>
-          <div class="stat-value">142</div>
+          <div class="stat-value" id="stat-clientes">—</div>
           <div class="stat-sub">+8 essa semana</div>
           <div class="stat-trend trend-up">↑ +6%</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">❌</div>
           <div class="stat-label">Cancelamentos</div>
-          <div class="stat-value">2</div>
+          <div class="stat-value" id="stat-cancel">—</div>
           <div class="stat-sub">Multas: R$ 80</div>
           <div class="stat-trend trend-down">+1 vs ontem</div>
         </div>
@@ -1476,14 +1476,19 @@ const API_BASE = '';
 
 async function apiFetch(url, opts = {}) {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
     const res = await fetch(API_BASE + url, {
       headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
       ...opts,
       body: opts.body ? JSON.stringify(opts.body) : undefined,
     });
+    clearTimeout(timeout);
     return await res.json();
   } catch(e) {
-    return { erro: 'Erro de conexão com o servidor' };
+    if (e.name === 'AbortError') return { erro: 'Servidor demorando — tente novamente' };
+    return { erro: 'Erro de conexão' };
   }
 }
 
@@ -1494,14 +1499,11 @@ async function apiFetch(url, opts = {}) {
 async function carregarStats() {
   const s = await apiFetch('/api/stats');
   if (s.erro) return;
-  const cards = document.querySelectorAll('.stat-value');
-  if (cards[0]) cards[0].textContent = s.reservas_hoje;
-  if (cards[1]) cards[1].textContent = `R$${s.receita_hoje.toLocaleString('pt-BR', {minimumFractionDigits:0})}`;
-  if (cards[2]) cards[2].textContent = s.total_clientes;
-  if (cards[3]) cards[3].textContent = s.cancelamentos_hoje;
-  const subs = document.querySelectorAll('.stat-sub');
-  if (subs[1]) subs[1].textContent = `Meta: R$ ${s.meta_diaria.toLocaleString('pt-BR')}`;
-  if (subs[3]) subs[3].textContent = `Multas: R$ ${s.multas_hoje.toFixed(2)}`;
+  const el = id => document.getElementById(id);
+  if (el('stat-reservas')) el('stat-reservas').textContent = s.reservas_hoje;
+  if (el('stat-receita'))  el('stat-receita').textContent  = `R$${(s.receita_hoje||0).toLocaleString('pt-BR', {minimumFractionDigits:0})}`;
+  if (el('stat-clientes')) el('stat-clientes').textContent = s.total_clientes;
+  if (el('stat-cancel'))   el('stat-cancel').textContent   = s.cancelamentos_hoje;
 }
 
 async function carregarReservas() {
@@ -1755,13 +1757,15 @@ async function filterChip(el, status) {
 }
 
 // ─── INIT ───
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   const now = new Date();
   document.getElementById('page-sub').textContent = 'Visão geral — ' + now.toLocaleDateString('pt-BR', { day:'numeric', month:'short' });
   document.getElementById('f-data').value = now.toISOString().split('T')[0];
 
-  // Carrega tudo da API
-  await Promise.all([carregarStats(), carregarReservas(), carregarClientes()]);
+  // Carrega cada seção independente — página não trava se API demorar
+  carregarStats();
+  carregarReservas();
+  carregarClientes();
   renderGrade();
 
   // Swipe para abrir sidebar no mobile
