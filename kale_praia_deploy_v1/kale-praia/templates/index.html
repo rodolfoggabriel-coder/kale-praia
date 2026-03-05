@@ -1236,36 +1236,220 @@
 </div>
 
 <script>
-// Dados carregados via API
+// ════════════════════════════════
+// LINK DE AGENDAMENTO
+// ════════════════════════════════
+function copiarLink() {
+  const url = window.location.origin + '/agendar';
+  navigator.clipboard.writeText(url).then(() => showNotif('Link copiado! 📋')).catch(() => showNotif('Link: ' + url));
+}
+function compartilharWpp() {
+  const url = window.location.origin + '/agendar';
+  const msg = encodeURIComponent('🏖️ *KALE PRAIA*\nAgende sua quadra online!\n\n🎾 Beach Tennis\n🏐 Vôlei de Praia\n⚽ Futevôlei\n🛶 Canoa Havaiana\n\n👉 ' + url);
+  window.open('https://wa.me/?text=' + msg, '_blank');
+}
 
-// Gera slots de 30 em 30 min entre dois horários
+// ════════════════════════════════
+// API
+// ════════════════════════════════
+async function apiFetch(url, opts = {}) {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      signal: ctrl.signal,
+      ...opts,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    clearTimeout(t);
+    return await res.json();
+  } catch(e) {
+    return { erro: e.name === 'AbortError' ? 'Timeout' : 'Erro de conexão' };
+  }
+}
+
+// ════════════════════════════════
+// STATS
+// ════════════════════════════════
+async function carregarStats() {
+  const s = await apiFetch('/api/stats');
+  if (s.erro) return;
+  const el = id => document.getElementById(id);
+  if (el('stat-reservas')) el('stat-reservas').textContent = s.reservas_hoje;
+  if (el('stat-receita'))  el('stat-receita').textContent  = 'R$' + (s.receita_hoje||0).toLocaleString('pt-BR');
+  if (el('stat-clientes')) el('stat-clientes').textContent = s.total_clientes;
+  if (el('stat-cancel'))   el('stat-cancel').textContent   = s.cancelamentos_hoje;
+}
+
+// ════════════════════════════════
+// RESERVAS
+// ════════════════════════════════
+async function carregarReservas() {
+  const reservas = await apiFetch('/api/reservas');
+  if (!Array.isArray(reservas)) return;
+  renderReservas(reservas.slice(0, 6), 'reservas-body', true);
+  renderReservas(reservas, 'reservas-full-body', false);
+}
+
+function renderReservas(reservas, tbodyId, compact) {
+  const catMap = { barragem:['cat-barragem','Barragem'], aluno_kale:['cat-aluno','Aluno'], nao_aluno:['cat-nao-aluno','N.Aluno'] };
+  const stMap  = { pago:['b-pago','Pago'], reservado:['b-reservado','Pendente'], cancelado:['b-cancelado','Cancelado'] };
+  const tbody  = document.getElementById(tbodyId);
+  if (!tbody) return;
+  if (!reservas.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:#999;">Nenhuma reserva</td></tr>';
+    return;
+  }
+  tbody.innerHTML = reservas.map(r => {
+    const [cc, cn] = catMap[r.categoria] || ['','?'];
+    const [sc, sn] = stMap[r.status]     || ['','?'];
+    const ini = (r.cliente_nome||'??').split(' ').slice(0,2).map(w=>w[0]).join('');
+    const dataFmt = (r.data||'').split('-').reverse().join('/');
+    const val = 'R$ ' + (r.valor_total||0).toFixed(2).replace('.',',');
+    if (compact) return `<tr>
+      <td><div class="client-cell"><div class="client-avatar-sm">${ini}</div>
+      <div style="font-weight:600;font-size:12px;">${(r.cliente_nome||'').split(' ')[0]}</div></div></td>
+      <td style="font-size:11px;">${r.horario_inicio}</td>
+      <td style="font-size:11px;">Q${r.quadra}</td>
+      <td style="font-weight:700;font-size:12px;">${val}</td>
+      <td><span class="badge ${sc}"><div class="badge-dot"></div>${sn}</span></td></tr>`;
+    return `<tr>
+      <td><div class="client-cell"><div class="client-avatar-sm">${ini}</div>
+      <div><div style="font-weight:600;">${r.cliente_nome||''}</div>
+      <div style="font-size:10px;color:#999;">#${r.id}</div></div></div></td>
+      <td><div style="font-weight:600;font-size:12px;">${dataFmt}</div>
+      <div style="font-size:11px;color:#999;">${r.horario_inicio}</div></td>
+      <td style="font-size:12px;">Quadra ${r.quadra}</td>
+      <td><span class="cat-badge ${cc}">${cn}</span></td>
+      <td style="font-weight:700;">${val}</td>
+      <td><span class="badge ${sc}"><div class="badge-dot"></div>${sn}</span></td>
+      <td><div class="actions-cell">
+        ${r.status==='reservado'?`<button class="btn-icon" onclick="confirmarPagamento(${r.id})" title="Pagar">💳</button>`:''}
+        ${r.status!=='cancelado'?`<button class="btn-icon" onclick="abrirCancelar(${r.id},'${r.data}','${r.horario_inicio}',${r.valor_total})" title="Cancelar">✕</button>`:''}
+        ${r.status!=='cancelado'?`<button class="btn-icon" onclick="abrirReagendar(${r.id},'${r.data}','${r.horario_inicio}')" title="Reagendar">📅</button>`:''}
+      </div></td></tr>`;
+  }).join('');
+}
+
+let filterStatus = 'todos';
+
+async function filterChip(el, status) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filterStatus = status;
+  const q = (document.getElementById('search-input').value||'').toLowerCase();
+  const reservas = await apiFetch('/api/reservas' + (status !== 'todos' ? '?status=' + status : ''));
+  if (!Array.isArray(reservas)) return;
+  const filtradas = reservas.filter(r => (r.cliente_nome||'').toLowerCase().includes(q));
+  renderReservas(filtradas, 'reservas-full-body', false);
+}
+
+async function filterTable() {
+  const q = (document.getElementById('search-input').value||'').toLowerCase();
+  const reservas = await apiFetch('/api/reservas' + (filterStatus !== 'todos' ? '?status=' + filterStatus : ''));
+  if (!Array.isArray(reservas)) return;
+  const filtradas = reservas.filter(r => (r.cliente_nome||'').toLowerCase().includes(q));
+  renderReservas(filtradas, 'reservas-full-body', false);
+}
+
+// ════════════════════════════════
+// CLIENTES
+// ════════════════════════════════
+async function carregarClientes() {
+  const clientes = await apiFetch('/api/clientes');
+  if (!Array.isArray(clientes)) return;
+  renderClientes(clientes);
+  const el = document.getElementById('clientes-count');
+  if (el) el.textContent = clientes.length + ' clientes cadastrados';
+}
+
+function renderClientes(clientes) {
+  const grid = document.getElementById('clients-grid');
+  if (!grid) return;
+  const cc = { barragem:'cat-barragem', aluno_kale:'cat-aluno', nao_aluno:'cat-nao-aluno' };
+  const cl = { barragem:'Barragem', aluno_kale:'Aluno KALE', nao_aluno:'Não Aluno' };
+  grid.innerHTML = clientes.map(c => {
+    const ini = c.nome.split(' ').slice(0,2).map(w=>w[0]).join('');
+    const ticket = c.total_reservas > 0 ? Math.round(c.total_gasto/c.total_reservas) : 0;
+    return `<div class="client-card">
+      <div class="client-card-header">
+        <div class="client-avatar-lg">${ini}</div>
+        <div><div class="client-card-name">${c.nome}</div>
+        <div class="client-card-phone">${c.telefone||'—'}</div></div>
+      </div>
+      <div class="client-card-body">
+        <div class="client-stats">
+          <div class="cs-item"><div class="cs-val">${c.total_reservas}</div><div class="cs-label">Reservas</div></div>
+          <div class="cs-item"><div class="cs-val">R$${c.total_gasto>999?Math.round(c.total_gasto/1000)+'k':c.total_gasto}</div><div class="cs-label">Total</div></div>
+          <div class="cs-item"><div class="cs-val">R$${ticket}</div><div class="cs-label">Ticket</div></div>
+        </div>
+        <span class="cat-badge ${cc[c.categoria]||''}">${cl[c.categoria]||c.categoria}</span>
+      </div></div>`;
+  }).join('');
+}
+
+// ════════════════════════════════
+// NAVEGAÇÃO DE PÁGINAS
+// ════════════════════════════════
+let currentPage = 'dashboard';
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  currentPage = name;
+  if (el) el.classList.add('active');
+  const bn = document.getElementById('bn-' + name);
+  if (bn) bn.classList.add('active');
+  const titles = { dashboard:'Dashboard', grade:'Grade de Horários', reservas:'Reservas', clientes:'Clientes' };
+  const subs   = { dashboard:'Visão geral', grade:'Agendamentos por quadra', reservas:'Gerenciar reservas', clientes:'Base de clientes' };
+  document.getElementById('page-title').textContent = titles[name] || name;
+  document.getElementById('page-sub').textContent   = subs[name] + ' — ' + new Date().toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
+  if (name === 'grade') renderGrade();
+  closeSidebar();
+  window.scrollTo(0, 0);
+}
+
+// ════════════════════════════════
+// SIDEBAR
+// ════════════════════════════════
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+// ════════════════════════════════
+// GRADE
+// ════════════════════════════════
+let currentQuadra = 0;
+let currentWeekOffset = 0;
+
 function gerarSlots(inicio, fim) {
   const slots = [];
   let [h, m] = inicio.split(':').map(Number);
   const [hf, mf] = fim.split(':').map(Number);
   while (h < hf || (h === hf && m <= mf)) {
-    slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
-    m += 30;
-    if (m >= 60) { h++; m -= 60; }
+    slots.push(String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'));
+    m += 30; if (m >= 60) { h++; m -= 60; }
   }
   return slots;
 }
 
-// Semana: 07:00–21:00 | Sábado: 08:00–12:00 (de 30 em 30)
 const HORARIOS_SEMANA = gerarSlots('07:00', '21:00');
 const HORARIOS_SABADO = gerarSlots('08:00', '12:00');
-const TODOS_HORARIOS  = HORARIOS_SEMANA; // sábado é subconjunto
-
-// Seg–Sex + Sáb (sem domingo)
+const TODOS_HORARIOS  = HORARIOS_SEMANA;
 const DIAS_LABELS = ['Seg','Ter','Qua','Qui','Sex','Sáb'];
 const DIAS_KEYS   = ['seg','ter','qua','qui','sex','sab'];
 const STATUS_OPTS = ['pago','pago','pago','reservado','disponivel','disponivel','cancelado'];
 
-function horariosParaDia(dKey) {
-  return dKey === 'sab' ? HORARIOS_SABADO : HORARIOS_SEMANA;
-}
+function horariosParaDia(d) { return d === 'sab' ? HORARIOS_SABADO : HORARIOS_SEMANA; }
 
-// Gera grade data
 const gradeData = {};
 for (let q = 0; q < 4; q++) {
   gradeData[q] = {};
@@ -1276,56 +1460,7 @@ for (let q = 0; q < 4; q++) {
     });
   });
 }
-// Alguns slots fixos de exemplo
-gradeData[0]['08:00']['ter'] = 'pago';
-gradeData[0]['09:30']['qua'] = 'reservado';
-gradeData[0]['10:00']['qui'] = 'disponivel';
-const _UNUSED = 0; // placeholder
 
-let currentQuadra = 0;
-let currentWeekOffset = 0;
-let filterStatus = 'todos';
-let currentPage = 'dashboard';
-
-// ─── PÁGINAS ───
-function showPage(name, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('.bn-item').forEach(n => n.classList.remove('active'));
-
-  document.getElementById('page-' + name).classList.add('active');
-  currentPage = name;
-
-  if (el) el.classList.add('active');
-
-  // Atualiza bottom nav
-  const bnEl = document.getElementById('bn-' + name);
-  if (bnEl) bnEl.classList.add('active');
-
-  const titles = { dashboard:'Dashboard', grade:'Grade de Horários', reservas:'Reservas', clientes:'Clientes' };
-  const subs = { dashboard:'Visão geral', grade:'Agendamentos por quadra', reservas:'Gerenciar reservas', clientes:'Base de clientes' };
-  document.getElementById('page-title').textContent = titles[name] || name;
-  document.getElementById('page-sub').textContent = subs[name] + ' — ' + new Date().toLocaleDateString('pt-BR', { day:'numeric', month:'short' });
-
-  if (name === 'grade') renderGrade();
-  closeSidebar();
-  window.scrollTo(0, 0);
-}
-
-// ─── SIDEBAR ───
-function toggleSidebar() {
-  const s = document.getElementById('sidebar');
-  const o = document.getElementById('sidebar-overlay');
-  s.classList.toggle('open');
-  o.classList.toggle('show');
-}
-
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('show');
-}
-
-// ─── GRADE ───
 function selectQuadra(idx, el) {
   document.querySelectorAll('.grade-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
@@ -1335,356 +1470,126 @@ function selectQuadra(idx, el) {
 
 function renderGrade() {
   const table = document.getElementById('grade-table');
-  // Calcula datas da semana atual
-  const base = new Date(2026, 2, 2); // 02/03/2026 = Seg
+  const base = new Date(2026, 2, 2);
   base.setDate(base.getDate() + currentWeekOffset * 7);
   const dDates = DIAS_KEYS.map((_, i) => {
     const d = new Date(base); d.setDate(d.getDate() + i);
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+    return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
   });
-
-  const nomesPago = ['Ana P.','Bruno M.','Carla R.','Diego F.','Edu L.','Felipe S.','Gabi M.'];
-  const nomesRes  = ['Isabela N.','João C.','Karen A.','Lucas B.'];
-
+  const nP = ['Ana P.','Bruno M.','Carla R.','Diego F.','Edu L.','Felipe S.'];
+  const nR = ['Isabela N.','João C.','Karen A.','Lucas B.'];
   let html = '<thead><tr><th>Hora</th>';
-  DIAS_LABELS.forEach((d, i) => {
+  DIAS_LABELS.forEach((d,i) => {
     const isSab = DIAS_KEYS[i] === 'sab';
-    html += `<th>${d}<br><small style="font-size:9px;opacity:.5">${dDates[i]}</small>${isSab ? '<br><small style="font-size:8px;color:#d7bf91">08–12h</small>' : ''}</th>`;
+    html += `<th>${d}<br><small style="font-size:9px;opacity:.5">${dDates[i]}</small>${isSab?'<br><small style="font-size:8px;color:#d7bf91">08–12h</small>':''}</th>`;
   });
   html += '</tr></thead><tbody>';
-
   const data = gradeData[currentQuadra];
-
   TODOS_HORARIOS.forEach(h => {
     html += `<tr><td class="hora-cell">${h}</td>`;
     DIAS_KEYS.forEach(d => {
-      const horariosDia = horariosParaDia(d);
-      if (!horariosDia.includes(h)) {
-        // Fora do horário desse dia — célula bloqueada
+      if (!horariosParaDia(d).includes(h)) {
         html += `<td style="padding:3px 5px;"><div style="border-radius:6px;min-height:32px;background:rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;"><span style="font-size:10px;color:#ccc;">—</span></div></td>`;
         return;
       }
-      const st = (data[h] && data[h][d]) ? data[h][d] : 'disponivel';
-      let inner = '';
-      if (st === 'disponivel') inner = `<div class="slot-add">+</div>`;
-      else if (st === 'pago') { const n = nomesPago[Math.floor(Math.random()*nomesPago.length)]; inner = `<div class="slot-name">${n}</div><div class="slot-cat">PAGO</div>`; }
-      else if (st === 'reservado') { const n = nomesRes[Math.floor(Math.random()*nomesRes.length)]; inner = `<div class="slot-name">${n}</div><div class="slot-cat">PEND.</div>`; }
-      else inner = `<div class="slot-cat" style="font-size:9px">CANCEL</div>`;
+      const st = (data[h] && data[h][d]) || 'disponivel';
+      let inner = st === 'disponivel'
+        ? '<div class="slot-add">+</div>'
+        : st === 'pago'
+          ? `<div class="slot-name">${nP[Math.floor(Math.random()*nP.length)]}</div><div class="slot-cat">PAGO</div>`
+          : st === 'reservado'
+            ? `<div class="slot-name">${nR[Math.floor(Math.random()*nR.length)]}</div><div class="slot-cat">PEND.</div>`
+            : '<div class="slot-cat" style="font-size:9px">CANCEL</div>';
       html += `<td class="slot s-${st}" onclick="slotClick('${h}','${d}','${st}')"><div class="slot-inner">${inner}</div></td>`;
     });
     html += '</tr>';
   });
-
   html += '</tbody>';
   table.innerHTML = html;
 }
 
 function slotClick(hora, dia, status) {
-  const msgs = {
-    disponivel: () => { openModal(); document.getElementById('f-horario').value = hora; },
-    pago: () => showNotif(`${hora} — Reserva confirmada ✅`),
-    reservado: () => showNotif(`${hora} — Aguardando pagamento ⏳`),
-    cancelado: () => showNotif(`${hora} — Cancelado ❌`),
-  };
-  (msgs[status] || (() => {}))();
+  if (status === 'disponivel') { openModal(); document.getElementById('f-horario').value = hora; }
+  else if (status === 'pago') showNotif(hora + ' — Reserva confirmada ✅');
+  else if (status === 'reservado') showNotif(hora + ' — Aguardando pagamento ⏳');
+  else showNotif(hora + ' — Cancelado ❌');
 }
 
 function changeWeek(dir) {
   currentWeekOffset += dir;
   const base = new Date(2026, 2, 2 + currentWeekOffset * 7);
-  const end = new Date(base); end.setDate(end.getDate() + 6);
-  const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-  document.getElementById('week-label').textContent = `${fmt(base)}–${fmt(end)} ${end.getFullYear()}`;
+  const end  = new Date(base); end.setDate(end.getDate() + 6);
+  const fmt  = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+  document.getElementById('week-label').textContent = fmt(base) + '–' + fmt(end) + ' ' + end.getFullYear();
   renderGrade();
 }
 
-
-
-
-// ─── MODAL ───
+// ════════════════════════════════
+// MODAL NOVA RESERVA
+// ════════════════════════════════
 function openModal() {
   document.getElementById('modal-overlay').classList.add('open');
   document.getElementById('f-data').value = new Date().toISOString().split('T')[0];
 }
-
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-}
-
-function closeModalOutside(e) {
-  if (e.target.id === 'modal-overlay') closeModal();
-}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target.id === 'modal-overlay') closeModal(); }
 
 function updateValor() {
-  const v = { barragem:'R$ 100,00', aluno:'R$ 80,00', nao_aluno:'R$ 110,00' };
-  document.getElementById('f-valor').value = v[document.getElementById('f-cat').value];
+  const v = { barragem:'R$ 100,00', aluno_kale:'R$ 80,00', nao_aluno:'R$ 110,00' };
+  document.getElementById('f-valor').value = v[document.getElementById('f-cat').value] || '—';
 }
 
-function saveReserva() {
-  const nome = document.getElementById('f-cliente').value.trim();
-  if (!nome) { showNotif('Informe o nome do cliente ⚠️'); return; }
+async function saveReserva() {
+  const nome     = document.getElementById('f-cliente').value.trim();
+  const telefone = document.getElementById('f-phone').value.trim();
+  const cat      = document.getElementById('f-cat').value;
+  const quadEl   = document.getElementById('f-quadra').value;
+  const quad     = parseInt((quadEl.match(/\d+/) || [1])[0]);
+  const data     = document.getElementById('f-data').value;
+  const hora     = document.getElementById('f-horario').value;
+  if (!nome) { showNotif('Informe o nome ⚠️'); return; }
+  const cli = await apiFetch('/api/clientes', { method:'POST', body:{ nome, telefone, categoria:cat } });
+  if (cli.erro) { showNotif('Erro: ' + cli.erro + ' ❌'); return; }
+  const res = await apiFetch('/api/reservar', { method:'POST', body:{ cliente_id:cli.id, quadra:quad, data, horario:hora, categoria:cat } });
   closeModal();
-  showNotif(`Reserva de ${nome.split(' ')[0]} criada! 🏖️`);
-}
-
-// ─── NOTIFICATION ───
-let notifT;
-function showNotif(msg) {
-  const el = document.getElementById('notification');
-  document.getElementById('notif-text').textContent = msg;
-  el.classList.add('show');
-  clearTimeout(notifT);
-  notifT = setTimeout(() => el.classList.remove('show'), 3000);
+  if (res.erro) { showNotif('Erro: ' + res.erro + ' ❌'); return; }
+  showNotif(res.mensagem + ' 🏖️');
+  carregarReservas(); carregarStats();
 }
 
 // ════════════════════════════════
-// LINK DE AGENDAMENTO
+// CANCELAR / REAGENDAR / PAGAR
 // ════════════════════════════════
-function copiarLink() {
-  const url = window.location.origin + '/agendar';
-  document.getElementById('link-agendamento').textContent = url.replace('https://','');
-  navigator.clipboard.writeText(url).then(() => {
-    showNotif('Link copiado! 📋');
-  }).catch(() => {
-    showNotif('Link: ' + url);
-  });
-}
-
-function compartilharWpp() {
-  const url = window.location.origin + '/agendar';
-  const msg = encodeURIComponent(
-    '🏖️ *KALE PRAIA*
-' +
-    'Agende sua quadra online!
-
-' +
-    '🎾 Beach Tennis
-🏐 Vôlei de Praia
-⚽ Futevôlei
-🛶 Canoa Havaiana
-
-' +
-    '👉 ' + url
-  );
-  window.open('https://wa.me/?text=' + msg, '_blank');
-}
-
-// ════════════════════════════════
-// API HELPERS
-// ════════════════════════════════
-const API_BASE = '';
-
-async function apiFetch(url, opts = {}) {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
-    const res = await fetch(API_BASE + url, {
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      ...opts,
-      body: opts.body ? JSON.stringify(opts.body) : undefined,
-    });
-    clearTimeout(timeout);
-    return await res.json();
-  } catch(e) {
-    if (e.name === 'AbortError') return { erro: 'Servidor demorando — tente novamente' };
-    return { erro: 'Erro de conexão' };
-  }
-}
-
-// ════════════════════════════════
-// CARREGA DADOS DA API
-// ════════════════════════════════
-
-async function carregarStats() {
-  const s = await apiFetch('/api/stats');
-  if (s.erro) return;
-  const el = id => document.getElementById(id);
-  if (el('stat-reservas')) el('stat-reservas').textContent = s.reservas_hoje;
-  if (el('stat-receita'))  el('stat-receita').textContent  = `R$${(s.receita_hoje||0).toLocaleString('pt-BR', {minimumFractionDigits:0})}`;
-  if (el('stat-clientes')) el('stat-clientes').textContent = s.total_clientes;
-  if (el('stat-cancel'))   el('stat-cancel').textContent   = s.cancelamentos_hoje;
-}
-
-async function carregarReservas() {
-  const reservas = await apiFetch('/api/reservas');
-  if (reservas.erro || !Array.isArray(reservas)) return;
-  renderReservasAPI(reservas.slice(0, 6), 'reservas-body', true);
-  renderReservasAPI(reservas, 'reservas-full-body', false);
-}
-
-async function carregarClientes() {
-  const clientes = await apiFetch('/api/clientes');
-  if (clientes.erro || !Array.isArray(clientes)) return;
-  renderClientesAPI(clientes);
-  const countEl = document.getElementById('clientes-count');
-  if (countEl) countEl.textContent = clientes.length + ' clientes cadastrados';
-}
-
-// ════════════════════════════════
-// RENDER COM DADOS DA API
-// ════════════════════════════════
-
-function renderReservasAPI(reservas, tbodyId, compact) {
-  const catMap  = { barragem:['cat-barragem','Barragem'], aluno_kale:['cat-aluno','Aluno'], nao_aluno:['cat-nao-aluno','N.Aluno'] };
-  const stMap   = { pago:['b-pago','Pago'], reservado:['b-reservado','Pendente'], cancelado:['b-cancelado','Cancelado'] };
-  const tbody   = document.getElementById(tbodyId);
-  if (!tbody) return;
-
-  if (!reservas.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:#999;">Nenhuma reserva encontrada</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = reservas.map(r => {
-    const [cc, cn] = catMap[r.categoria] || ['', r.categoria];
-    const [sc, sn] = stMap[r.status]     || ['', r.status];
-    const initials = (r.cliente_nome || '??').split(' ').slice(0,2).map(w=>w[0]).join('');
-    const dataFmt  = r.data ? r.data.split('-').reverse().join('/') : '';
-    const valor    = `R$ ${(r.valor_total||0).toFixed(2).replace('.',',')}`;
-
-    if (compact) {
-      return `<tr>
-        <td><div class="client-cell">
-          <div class="client-avatar-sm">${initials}</div>
-          <div style="font-weight:600;font-size:12px;">${(r.cliente_nome||'').split(' ')[0]}</div>
-        </div></td>
-        <td style="font-size:11px;">${r.horario_inicio}</td>
-        <td style="font-size:11px;">Q${r.quadra}</td>
-        <td style="font-weight:700;font-size:12px;">${valor}</td>
-        <td><span class="badge ${sc}"><div class="badge-dot"></div>${sn}</span></td>
-      </tr>`;
-    }
-
-    return `<tr>
-      <td><div class="client-cell">
-        <div class="client-avatar-sm">${initials}</div>
-        <div><div style="font-weight:600;">${r.cliente_nome||''}</div>
-             <div style="font-size:10px;color:#999;">#${r.id}</div></div>
-      </div></td>
-      <td><div style="font-weight:600;font-size:12px;">${dataFmt}</div>
-          <div style="font-size:11px;color:#999;">${r.horario_inicio}</div></td>
-      <td style="font-size:12px;">Quadra ${r.quadra}</td>
-      <td><span class="cat-badge ${cc}">${cn}</span></td>
-      <td style="font-weight:700;">${valor}</td>
-      <td><span class="badge ${sc}"><div class="badge-dot"></div>${sn}</span></td>
-      <td><div class="actions-cell">
-        ${r.status === 'reservado' ? `<button class="btn-icon" onclick="confirmarPagamento(${r.id})" title="Confirmar pagamento">💳</button>` : ''}
-        ${r.status !== 'cancelado' ? `<button class="btn-icon" onclick="abrirCancelar(${r.id},'${r.data}','${r.horario_inicio}',${r.valor_total})" title="Cancelar">✕</button>` : ''}
-        ${r.status !== 'cancelado' ? `<button class="btn-icon" onclick="abrirReagendar(${r.id},'${r.data}','${r.horario_inicio}')" title="Reagendar">📅</button>` : ''}
-      </div></td>
-    </tr>`;
-  }).join('');
-}
-
-function renderClientesAPI(clientes) {
-  const grid = document.getElementById('clients-grid');
-  if (!grid) return;
-  const catClass = { barragem:'cat-barragem', aluno_kale:'cat-aluno', nao_aluno:'cat-nao-aluno' };
-  const catLabel = { barragem:'Barragem', aluno_kale:'Aluno KALE', nao_aluno:'Não Aluno' };
-
-  grid.innerHTML = clientes.map(c => {
-    const initials = c.nome.split(' ').slice(0,2).map(w=>w[0]).join('');
-    const cc = catClass[c.categoria] || '';
-    const cl = catLabel[c.categoria] || c.categoria;
-    const ticket = c.total_reservas > 0 ? Math.round(c.total_gasto / c.total_reservas) : 0;
-    return `<div class="client-card" onclick="showNotif('Perfil: ${c.nome} 👤')">
-      <div class="client-card-header">
-        <div class="client-avatar-lg">${initials}</div>
-        <div>
-          <div class="client-card-name">${c.nome}</div>
-          <div class="client-card-phone">${c.telefone || 'Sem telefone'}</div>
-        </div>
-      </div>
-      <div class="client-card-body">
-        <div class="client-stats">
-          <div class="cs-item"><div class="cs-val">${c.total_reservas}</div><div class="cs-label">Reservas</div></div>
-          <div class="cs-item"><div class="cs-val">R$${c.total_gasto > 999 ? Math.round(c.total_gasto/1000)+'k' : c.total_gasto}</div><div class="cs-label">Total</div></div>
-          <div class="cs-item"><div class="cs-val">R$${ticket}</div><div class="cs-label">Ticket</div></div>
-        </div>
-        <span class="cat-badge ${cc}" style="margin-bottom:8px;display:inline-block;">${cl}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ════════════════════════════════
-// AÇÕES — PAGAMENTO / CANCELAR / REAGENDAR
-// ════════════════════════════════
-
-async function confirmarPagamento(reservaId) {
-  if (!confirm(`Confirmar pagamento da reserva #${reservaId}?`)) return;
-  const res = await apiFetch(`/api/reservas/${reservaId}/pagar`, { method: 'POST' });
-  if (res.erro) { showNotif(`Erro: ${res.erro} ❌`); return; }
-  showNotif(res.mensagem + ' 💳');
-  carregarReservas();
-  carregarStats();
-}
-
-// ── Modal cancelamento ──
-let _cancelarId = null, _cancelarValor = 0;
+let _cancelarId = null;
 
 async function abrirCancelar(id, data, horario, valor) {
-  _cancelarId    = id;
-  _cancelarValor = valor;
-
-  // Calcula multa previamente
-  const calc = await apiFetch('/api/calcular', {
-    method: 'POST',
-    body:   { acao: 'cancelamento', data, horario, valor_pago: valor }
-  });
-
-  const multa    = calc.multa    || 0;
-  const devolucao = calc.devolucao ?? valor;
-  const tipo     = calc.tipo     || '';
-  const horas    = calc.horas_ate || 0;
-
-  document.getElementById('modal-cancelar-info').innerHTML = `
-    <div style="background:var(--palha);border-radius:10px;padding:16px;margin-bottom:12px;">
-      <div style="font-size:12px;color:var(--cinza);margin-bottom:8px;">Reserva #${id} — R$ ${valor.toFixed(2).replace('.',',')}</div>
-      <div style="font-size:13px;color:var(--cinza);">⏱️ ${Math.abs(horas.toFixed(0))}h ${horas >= 0 ? 'antes' : 'após'} da reserva</div>
-    </div>
-    ${tipo === 'integral'
-      ? `<div style="background:#e8f5e9;border-radius:8px;padding:12px;color:#2e7d32;font-weight:600;">✅ Devolução integral: R$ ${devolucao.toFixed(2).replace('.',',')} <br><small style="font-weight:400">Prazo: 5 dias úteis</small></div>`
-      : `<div style="background:#fce4ec;border-radius:8px;padding:12px;color:#c62828;">
-           ⚠️ Multa: R$ ${multa.toFixed(2).replace('.',',')}<br>
-           <span style="font-weight:700">Devolução: R$ ${devolucao.toFixed(2).replace('.',',')}</span>
-           <br><small>Prazo: 5 dias úteis</small>
-         </div>`
-    }`;
-
+  _cancelarId = id;
+  const calc = await apiFetch('/api/calcular', { method:'POST', body:{ acao:'cancelamento', data, horario, valor_pago:valor } });
+  const multa = calc.multa || 0, dev = calc.devolucao ?? valor;
+  document.getElementById('modal-cancelar-info').innerHTML = calc.tipo === 'integral'
+    ? `<div style="background:#e8f5e9;border-radius:8px;padding:12px;color:#2e7d32;font-weight:600;">✅ Devolução integral: R$ ${dev.toFixed(2).replace('.',',')} <br><small style="font-weight:400">Prazo: 5 dias úteis</small></div>`
+    : `<div style="background:#fce4ec;border-radius:8px;padding:12px;color:#c62828;">⚠️ Multa: R$ ${multa.toFixed(2).replace('.',',')}<br><span style="font-weight:700">Devolução: R$ ${dev.toFixed(2).replace('.',',')}</span><br><small>Prazo: 5 dias úteis</small></div>`;
   document.getElementById('modal-cancelar').classList.add('open');
 }
 
 async function confirmarCancelamento() {
-  const res = await apiFetch(`/api/reservas/${_cancelarId}/cancelar`, { method: 'POST' });
+  const res = await apiFetch('/api/reservas/' + _cancelarId + '/cancelar', { method:'POST' });
   fecharCancelar();
-  if (res.erro) { showNotif(`Erro: ${res.erro} ❌`); return; }
-  showNotif(`Reserva #${_cancelarId} cancelada. Devolução: R$ ${res.devolucao?.toFixed(2)} 💸`);
-  carregarReservas();
-  carregarStats();
+  showNotif(res.erro ? 'Erro: ' + res.erro + ' ❌' : 'Cancelado! Devolução: R$ ' + (res.devolucao||0).toFixed(2) + ' 💸');
+  carregarReservas(); carregarStats();
 }
 
-function fecharCancelar() {
-  document.getElementById('modal-cancelar').classList.remove('open');
-}
+function fecharCancelar() { document.getElementById('modal-cancelar').classList.remove('open'); }
 
-// ── Modal reagendamento ──
 let _reagendarId = null;
 
 async function abrirReagendar(id, data, horario) {
   _reagendarId = id;
-  const calc = await apiFetch('/api/calcular', {
-    method: 'POST',
-    body:   { acao: 'reagendamento', data, horario }
-  });
-
+  const calc = await apiFetch('/api/calcular', { method:'POST', body:{ acao:'reagendamento', data, horario } });
   document.getElementById('modal-reagendar-info').innerHTML = calc.gratuito
-    ? `<div style="background:#e8f5e9;border-radius:8px;padding:12px;color:#2e7d32;font-weight:600;">✅ Reagendamento gratuito</div>`
-    : `<div style="background:#fce4ec;border-radius:8px;padding:12px;color:#c62828;font-weight:600;">⚠️ Taxa: R$ ${calc.taxa?.toFixed(2)} (menos de 48h)</div>`;
-
-  const hoje = new Date().toISOString().split('T')[0];
-  document.getElementById('f-nova-data').value = hoje;
+    ? '<div style="background:#e8f5e9;border-radius:8px;padding:12px;color:#2e7d32;font-weight:600;">✅ Reagendamento gratuito</div>'
+    : `<div style="background:#fce4ec;border-radius:8px;padding:12px;color:#c62828;font-weight:600;">⚠️ Taxa: R$ ${(calc.taxa||0).toFixed(2)} (menos de 48h)</div>`;
+  document.getElementById('f-nova-data').value = new Date().toISOString().split('T')[0];
   document.getElementById('modal-reagendar').classList.add('open');
 }
 
@@ -1692,90 +1597,55 @@ async function confirmarReagendamento() {
   const nd = document.getElementById('f-nova-data').value;
   const nh = document.getElementById('f-novo-horario').value;
   if (!nd || !nh) { showNotif('Informe nova data e horário ⚠️'); return; }
-  const res = await apiFetch(`/api/reservas/${_reagendarId}/reagendar`, {
-    method: 'POST',
-    body:   { nova_data: nd, novo_horario: nh }
-  });
+  const res = await apiFetch('/api/reservas/' + _reagendarId + '/reagendar', { method:'POST', body:{ nova_data:nd, novo_horario:nh } });
   fecharReagendar();
-  if (res.erro) { showNotif(`Erro: ${res.erro} ❌`); return; }
-  showNotif(`Reagendado para ${nd} às ${nh}! 📅`);
+  showNotif(res.erro ? 'Erro: ' + res.erro + ' ❌' : 'Reagendado para ' + nd + ' às ' + nh + ' 📅');
   carregarReservas();
 }
 
-function fecharReagendar() {
-  document.getElementById('modal-reagendar').classList.remove('open');
-}
+function fecharReagendar() { document.getElementById('modal-reagendar').classList.remove('open'); }
 
-// Sobrescreve saveReserva para usar a API
-async function saveReserva() {
-  const nome = document.getElementById('f-cliente').value.trim();
-  const telefone = document.getElementById('f-phone').value.trim();
-  const cat  = document.getElementById('f-cat').value;
-  const quad = parseInt(document.getElementById('f-quadra').value.match(/\d+/)[0]);
-  const data = document.getElementById('f-data').value;
-  const hora = document.getElementById('f-horario').value;
-
-  if (!nome) { showNotif('Informe o nome do cliente ⚠️'); return; }
-  if (!data || !hora) { showNotif('Informe data e horário ⚠️'); return; }
-
-  // Cria cliente primeiro
-  const cli = await apiFetch('/api/clientes', { method:'POST', body: { nome, telefone, categoria: cat } });
-  if (cli.erro) { showNotif(`Erro: ${cli.erro} ❌`); return; }
-
-  // Cria reserva
-  const res = await apiFetch('/api/reservar', {
-    method: 'POST',
-    body:   { cliente_id: cli.id, quadra: quad, data, horario: hora, categoria: cat }
-  });
-
-  closeModal();
-  if (res.erro) { showNotif(`Erro: ${res.erro} ❌`); return; }
-  showNotif(`${res.mensagem} 🏖️`);
-  carregarReservas();
-  carregarStats();
+async function confirmarPagamento(id) {
+  if (!confirm('Confirmar pagamento da reserva #' + id + '?')) return;
+  const res = await apiFetch('/api/reservas/' + id + '/pagar', { method:'POST' });
+  showNotif(res.erro ? 'Erro: ' + res.erro + ' ❌' : res.mensagem + ' 💳');
+  carregarReservas(); carregarStats();
 }
 
 // ════════════════════════════════
-// FILTRO RESERVAS
+// NOTIFICAÇÃO
 // ════════════════════════════════
-async function filterTable() {
-  const q = (document.getElementById('search-input').value || '').toLowerCase();
-  const reservas = await apiFetch('/api/reservas' + (filterStatus !== 'todos' ? `?status=${filterStatus}` : ''));
-  if (!Array.isArray(reservas)) return;
-  const filtradas = reservas.filter(r =>
-    (r.cliente_nome || '').toLowerCase().includes(q) ||
-    `quadra ${r.quadra}`.includes(q)
-  );
-  renderReservasAPI(filtradas, 'reservas-full-body', false);
+let _notifT;
+function showNotif(msg) {
+  const el = document.getElementById('notification');
+  document.getElementById('notif-text').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_notifT);
+  _notifT = setTimeout(() => el.classList.remove('show'), 3000);
 }
 
-async function filterChip(el, status) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  filterStatus = status;
-  await filterTable();
-}
-
-// ─── INIT ───
+// ════════════════════════════════
+// INIT
+// ════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   const now = new Date();
-  document.getElementById('page-sub').textContent = 'Visão geral — ' + now.toLocaleDateString('pt-BR', { day:'numeric', month:'short' });
+  document.getElementById('page-sub').textContent = 'Visão geral — ' + now.toLocaleDateString('pt-BR',{day:'numeric',month:'short'});
   document.getElementById('f-data').value = now.toISOString().split('T')[0];
 
-  // Carrega cada seção independente — página não trava se API demorar
+  // Carrega dados da API sem bloquear
   carregarStats();
   carregarReservas();
   carregarClientes();
   renderGrade();
 
-  // Swipe para abrir sidebar no mobile
-  let touchStartX = 0;
-  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
-  document.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    if (touchStartX < 24 && dx > 60) toggleSidebar();
+  // Swipe mobile
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive:true });
+  document.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (tx < 24 && dx > 60) toggleSidebar();
     if (dx < -60 && document.getElementById('sidebar').classList.contains('open')) closeSidebar();
-  }, { passive: true });
+  }, { passive:true });
 });
 </script>
 </body>
