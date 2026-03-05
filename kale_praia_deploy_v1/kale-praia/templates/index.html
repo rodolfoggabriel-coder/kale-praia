@@ -1236,32 +1236,7 @@
 </div>
 
 <script>
-// ─── DATA ───
-const CLIENTES = [
-  { nome: 'Ana Paula Costa', phone: '(61) 99123-0001', reservas: 12, gasto: 1320, cat: 'aluno', modalidades: ['Beach Tennis','Vôlei'] },
-  { nome: 'Bruno Martins', phone: '(61) 99123-0002', reservas: 8, gasto: 800, cat: 'aluno', modalidades: ['Beach Tennis'] },
-  { nome: 'Carla Ribeiro', phone: '(61) 99123-0003', reservas: 5, gasto: 1000, cat: 'barragem', modalidades: ['Canoa Havaiana','Futevôlei'] },
-  { nome: 'Diego Fonseca', phone: '(61) 99123-0004', reservas: 3, gasto: 330, cat: 'nao_aluno', modalidades: ['Vôlei','Beach Tennis'] },
-  { nome: 'Eduarda Lima', phone: '(61) 99123-0005', reservas: 20, gasto: 2200, cat: 'aluno', modalidades: ['Beach Tennis'] },
-  { nome: 'Felipe Santos', phone: '(61) 99123-0006', reservas: 7, gasto: 770, cat: 'aluno', modalidades: ['Futevôlei','Vôlei'] },
-  { nome: 'Gabriela Moura', phone: '(61) 99123-0007', reservas: 4, gasto: 440, cat: 'nao_aluno', modalidades: ['Beach Tennis'] },
-  { nome: 'Henrique Torres', phone: '(61) 99123-0008', reservas: 15, gasto: 1500, cat: 'barragem', modalidades: ['Canoa Havaiana'] },
-  { nome: 'Isabela Nunes', phone: '(61) 99123-0009', reservas: 6, gasto: 600, cat: 'aluno', modalidades: ['Vôlei'] },
-  { nome: 'João Carvalho', phone: '(61) 99123-0010', reservas: 9, gasto: 990, cat: 'aluno', modalidades: ['Beach Tennis','Futevôlei'] },
-];
-
-const RESERVAS = [
-  { id:'KP001', cliente:'Ana Paula Costa', data:'04/03/2026', hora:'08:00', quadra:'Quadra 1', cat:'aluno', valor:'R$ 80', status:'pago' },
-  { id:'KP002', cliente:'Bruno Martins', data:'04/03/2026', hora:'09:00', quadra:'Quadra 2', cat:'aluno', valor:'R$ 80', status:'pago' },
-  { id:'KP003', cliente:'Carla Ribeiro', data:'04/03/2026', hora:'10:00', quadra:'Quadra 1', cat:'barragem', valor:'R$ 100', status:'reservado' },
-  { id:'KP004', cliente:'Diego Fonseca', data:'04/03/2026', hora:'11:00', quadra:'Quadra 3', cat:'nao_aluno', valor:'R$ 110', status:'pago' },
-  { id:'KP005', cliente:'Eduarda Lima', data:'04/03/2026', hora:'14:00', quadra:'Quadra 2', cat:'aluno', valor:'R$ 80', status:'cancelado' },
-  { id:'KP006', cliente:'Felipe Santos', data:'05/03/2026', hora:'08:00', quadra:'Quadra 3', cat:'aluno', valor:'R$ 80', status:'reservado' },
-  { id:'KP007', cliente:'Gabriela Moura', data:'05/03/2026', hora:'09:00', quadra:'Quadra 1', cat:'nao_aluno', valor:'R$ 110', status:'pago' },
-  { id:'KP008', cliente:'Henrique Torres', data:'05/03/2026', hora:'10:00', quadra:'Quadra 4', cat:'barragem', valor:'R$ 100', status:'pago' },
-  { id:'KP009', cliente:'Isabela Nunes', data:'06/03/2026', hora:'17:00', quadra:'Quadra 2', cat:'aluno', valor:'R$ 80', status:'reservado' },
-  { id:'KP010', cliente:'João Carvalho', data:'06/03/2026', hora:'18:00', quadra:'Quadra 1', cat:'aluno', valor:'R$ 80', status:'pago' },
-];
+// Dados carregados via API
 
 // Gera slots de 30 em 30 min entre dois horários
 function gerarSlots(inicio, fim) {
@@ -1423,85 +1398,8 @@ function changeWeek(dir) {
   renderGrade();
 }
 
-// ─── RESERVAS ───
-function renderReservas(data, tbodyId, compact) {
-  const catMap = { barragem:['cat-barragem','Barragem'], aluno:['cat-aluno','Aluno'], nao_aluno:['cat-nao-aluno','N.Aluno'] };
-  const stMap = { pago:['b-pago','Pago'], reservado:['b-reservado','Pendente'], cancelado:['b-cancelado','Cancelado'] };
-  const tbody = document.getElementById(tbodyId);
-  tbody.innerHTML = data.map(r => {
-    const [cc,cn] = catMap[r.cat] || ['','?'];
-    const [sc,sn] = stMap[r.status] || ['','?'];
-    const initials = r.cliente.split(' ').slice(0,2).map(w=>w[0]).join('');
-    if (compact) {
-      return `<tr>
-        <td><div class="client-cell"><div class="client-avatar-sm">${initials}</div><div style="font-weight:600;font-size:12px;">${r.cliente.split(' ')[0]}</div></div></td>
-        <td style="font-size:11px;">${r.hora}</td>
-        <td style="font-size:11px;">${r.quadra.replace('Quadra ','Q')}</td>
-        <td style="font-weight:700;font-size:12px;">${r.valor}</td>
-        <td><span class="badge ${sc}"><div class="badge-dot"></div>${sn}</span></td>
-      </tr>`;
-    }
-    return `<tr>
-      <td><div class="client-cell"><div class="client-avatar-sm">${initials}</div><div><div style="font-weight:600;">${r.cliente}</div><div style="font-size:10px;color:#999;">#${r.id}</div></div></div></td>
-      <td><div style="font-weight:600;font-size:12px;">${r.data}</div><div style="font-size:11px;color:#999;">${r.hora}</div></td>
-      <td style="font-size:12px;">${r.quadra}</td>
-      <td><span class="cat-badge ${cc}">${cn}</span></td>
-      <td style="font-weight:700;">${r.valor}</td>
-      <td><span class="badge ${sc}"><div class="badge-dot"></div>${sn}</span></td>
-      <td><div class="actions-cell">
-        <button class="btn-icon" onclick="showNotif('Detalhes #${r.id} 📋')">👁️</button>
-        <button class="btn-icon" onclick="showNotif('WhatsApp enviado! 📱')">💬</button>
-      </div></td>
-    </tr>`;
-  }).join('');
-}
 
-function filterChip(el, status) {
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  filterStatus = status;
-  filterTable();
-}
 
-function filterTable() {
-  const q = (document.getElementById('search-input').value || '').toLowerCase();
-  const data = RESERVAS.filter(r => {
-    const ms = r.cliente.toLowerCase().includes(q) || r.quadra.toLowerCase().includes(q);
-    const mf = filterStatus === 'todos' || r.status === filterStatus;
-    return ms && mf;
-  });
-  renderReservas(data, 'reservas-full-body', false);
-}
-
-// ─── CLIENTES ───
-function renderClientes() {
-  const grid = document.getElementById('clients-grid');
-  const catMap = { barragem:'cat-barragem', aluno:'cat-aluno', nao_aluno:'cat-nao-aluno' };
-  const catLabel = { barragem:'Barragem', aluno:'Aluno KALE', nao_aluno:'Não Aluno' };
-  grid.innerHTML = CLIENTES.map(c => {
-    const initials = c.nome.split(' ').slice(0,2).map(w=>w[0]).join('');
-    const cc = catMap[c.cat];
-    const cl = catLabel[c.cat];
-    return `<div class="client-card" onclick="showNotif('Perfil: ${c.nome} 👤')">
-      <div class="client-card-header">
-        <div class="client-avatar-lg">${initials}</div>
-        <div>
-          <div class="client-card-name">${c.nome}</div>
-          <div class="client-card-phone">${c.phone}</div>
-        </div>
-      </div>
-      <div class="client-card-body">
-        <div class="client-stats">
-          <div class="cs-item"><div class="cs-val">${c.reservas}</div><div class="cs-label">Reservas</div></div>
-          <div class="cs-item"><div class="cs-val">${c.gasto > 999 ? 'R$'+Math.round(c.gasto/1000)+'k' : 'R$'+c.gasto}</div><div class="cs-label">Total</div></div>
-          <div class="cs-item"><div class="cs-val">R$${Math.round(c.gasto/c.reservas)}</div><div class="cs-label">Ticket</div></div>
-        </div>
-        <span class="cat-badge ${cc}" style="margin-bottom:8px;display:inline-block;">${cl}</span>
-        <div class="mod-tags">${c.modalidades.map(m=>`<span class="mod-tag">${m}</span>`).join('')}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
 
 // ─── MODAL ───
 function openModal() {
