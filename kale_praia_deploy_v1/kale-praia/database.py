@@ -40,6 +40,18 @@ def init_db():
             atualizado_em   TEXT DEFAULT (datetime('now','localtime'))
         );
 
+        CREATE TABLE IF NOT EXISTS aulas (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome        TEXT NOT NULL,
+            quadras     TEXT NOT NULL,   -- JSON array ex: [1,2]
+            dias        TEXT NOT NULL,   -- JSON array ex: ["seg","qua"]
+            inicio      TEXT NOT NULL,   -- HH:MM
+            fim         TEXT NOT NULL,   -- HH:MM
+            cor         TEXT DEFAULT '#5c6bc0',
+            ativo       INTEGER DEFAULT 1,
+            criado_em   TEXT DEFAULT (datetime('now','localtime'))
+        );
+
         CREATE TABLE IF NOT EXISTS movimentacoes (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             reserva_id  INTEGER REFERENCES reservas(id),

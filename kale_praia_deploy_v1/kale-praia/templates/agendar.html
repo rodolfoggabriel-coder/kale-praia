@@ -604,9 +604,8 @@ body {
 
   <div class="hero-modalidades">
     <span class="mod-pill">🎾 Beach Tennis</span>
-    <span class="mod-pill">🏐 Vôlei</span>
-    <span class="mod-pill">⚽ Futevôlei</span>
-    <span class="mod-pill">🛶 Canoa</span>
+    <span class="mod-pill">🏖️ Quadras de Areia</span>
+    <span class="mod-pill">📍 Brasília</span>
   </div>
 </div>
 
@@ -644,26 +643,13 @@ body {
         <div class="card-sub">Qual esporte você quer praticar?</div>
       </div>
       <div class="card-body">
-        <div class="mod-grid">
-          <button class="mod-btn" onclick="selecionarMod('beach_tennis', this)">
-            <div class="mod-emoji">🎾</div>
-            <div class="mod-nome">Beach Tennis</div>
-            <div class="mod-info">Quadras 1 e 2</div>
-          </button>
-          <button class="mod-btn" onclick="selecionarMod('volei', this)">
-            <div class="mod-emoji">🏐</div>
-            <div class="mod-nome">Vôlei de Praia</div>
-            <div class="mod-info">Quadras 1 e 2</div>
-          </button>
-          <button class="mod-btn" onclick="selecionarMod('futevolei', this)">
-            <div class="mod-emoji">⚽</div>
-            <div class="mod-nome">Futevôlei</div>
-            <div class="mod-info">Quadra 3</div>
-          </button>
-          <button class="mod-btn" onclick="selecionarMod('canoa', this)">
-            <div class="mod-emoji">🛶</div>
-            <div class="mod-nome">Canoa Havaiana</div>
-            <div class="mod-info">Quadra 4</div>
+        <div class="mod-grid" style="grid-template-columns:1fr;">
+          <button class="mod-btn selected" onclick="selecionarMod('beach_tennis', this)" style="flex-direction:row;justify-content:flex-start;gap:16px;padding:22px 20px;">
+            <div class="mod-emoji" style="font-size:40px;">🎾</div>
+            <div style="text-align:left;">
+              <div class="mod-nome" style="font-size:16px;">Beach Tennis</div>
+              <div class="mod-info">Quadras 1 e 2 — areia oficial</div>
+            </div>
           </button>
         </div>
       </div>
@@ -716,7 +702,7 @@ body {
         <div class="card-sub">Quadras disponíveis para sua modalidade</div>
       </div>
       <div class="card-body">
-        <div class="quadra-grid" id="quadra-grid"></div>
+        <div class="quadra-grid" id="quadra-grid" style="grid-template-columns:repeat(3,1fr);"></div>
       </div>
     </div>
   </div>
@@ -904,17 +890,11 @@ const STATE = {
 };
 
 const MODALIDADE_QUADRAS = {
-  beach_tennis: [1, 2],
-  volei:        [1, 2],
-  futevolei:    [3],
-  canoa:        [4],
+  beach_tennis: [1, 2, 3, 4, 5, 6],
 };
 
 const MODALIDADE_LABEL = {
   beach_tennis: '🎾 Beach Tennis',
-  volei:        '🏐 Vôlei de Praia',
-  futevolei:    '⚽ Futevôlei',
-  canoa:        '🛶 Canoa Havaiana',
 };
 
 const CAT_LABEL = {
@@ -1155,6 +1135,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
   });
 
+  // Beach Tennis já selecionado automaticamente
+  STATE.modalidade = 'beach_tennis';
+  STATE.modalidadeLabel = '🎾 Beach Tennis';
   renderDias();
   updateUI();
 });

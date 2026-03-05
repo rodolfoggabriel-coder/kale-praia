@@ -754,6 +754,47 @@
     .bottom-nav { padding-bottom: max(env(safe-area-inset-bottom), 8px); height: calc(var(--bottomnav-h) + env(safe-area-inset-bottom)); }
     .main { padding-bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom)); }
   }
+
+  .s-aula .slot-inner { background: #5c6bc0; color: #fff; border: none; }
+  .s-aula .slot-inner:hover { background: #3949ab; }
+  .ld-aula { background: #5c6bc0; }
+
+  .aula-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #e8eaf6; color: #3949ab;
+    border-radius: 6px; padding: 4px 8px;
+    font-size: 11px; font-weight: 700; margin: 3px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .aula-chip:hover { background: #c5cae9; }
+  .aula-chip .chip-x { opacity: 0.6; font-size: 13px; }
+
+  .dias-check { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .dia-check {
+    display: flex; align-items: center; gap: 4px;
+    padding: 7px 10px; border-radius: 7px;
+    border: 1.5px solid rgba(0,0,0,0.1);
+    background: var(--branco); cursor: pointer;
+    font-size: 12px; font-weight: 700; color: var(--cinza);
+    transition: all 0.15s; user-select: none;
+  }
+  .dia-check.checked { background: #5c6bc0; color: #fff; border-color: #5c6bc0; }
+  .dia-check:active { transform: scale(0.94); }
+
+  .aulas-lista { margin-top: 12px; }
+  .aula-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; background: #e8eaf6;
+    border-radius: 8px; margin-bottom: 6px;
+    font-size: 12px; color: #3949ab;
+  }
+  .aula-item strong { font-size: 13px; }
+  .btn-remover-aula {
+    background: none; border: none; cursor: pointer;
+    color: #c62828; font-size: 16px; padding: 0 4px;
+    line-height: 1;
+  }
+
 </style>
 </head>
 <body>
@@ -968,16 +1009,20 @@
 
       <div class="grade-container">
         <div class="grade-tabs">
-          <div class="grade-tab active" onclick="selectQuadra(0, this)">🎾 Quadra 1</div>
-          <div class="grade-tab" onclick="selectQuadra(1, this)">🏐 Quadra 2</div>
-          <div class="grade-tab" onclick="selectQuadra(2, this)">⚽ Quadra 3</div>
-          <div class="grade-tab" onclick="selectQuadra(3, this)">🛶 Quadra 4</div>
+          <div class="grade-tab active" onclick="selectQuadra(0, this)">🎾 Q1</div>
+          <div class="grade-tab" onclick="selectQuadra(1, this)">🎾 Q2</div>
+          <div class="grade-tab" onclick="selectQuadra(2, this)">🎾 Q3</div>
+          <div class="grade-tab" onclick="selectQuadra(3, this)">🎾 Q4</div>
+          <div class="grade-tab" onclick="selectQuadra(4, this)">🎾 Q5</div>
+          <div class="grade-tab" onclick="selectQuadra(5, this)">🎾 Q6</div>
         </div>
         <div class="grade-legend">
           <div class="legend-item"><div class="legend-dot ld-disponivel"></div>Disponível</div>
           <div class="legend-item"><div class="legend-dot ld-reservado"></div>Reservado</div>
           <div class="legend-item"><div class="legend-dot ld-pago"></div>Confirmado</div>
           <div class="legend-item"><div class="legend-dot ld-cancelado"></div>Cancelado</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#5c6bc0;"></div>Aula</div>
+          <button onclick="abrirModalAula()" style="margin-left:auto;padding:5px 12px;background:var(--preto);color:var(--dourado);border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">+ Bloco de Aula</button>
         </div>
         <div class="grade-scroll">
           <table class="grade-table" id="grade-table"></table>
@@ -1229,6 +1274,81 @@
   </div>
 </div>
 
+<!-- ═══ MODAL AULA ═══ -->
+<div class="modal-overlay" id="modal-aula" onclick="if(event.target.id==='modal-aula')fecharModalAula()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Bloco de Aula</div>
+      <button class="modal-close" onclick="fecharModalAula()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label class="form-label">Nome da Turma / Aula</label>
+        <input type="text" class="form-control" id="f-aula-nome" placeholder="Ex: Turma A — Iniciantes">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Quadras</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;" id="aula-quadras-check">
+          <div class="dia-check" onclick="toggleQuadraAula(1,this)">Q1</div>
+          <div class="dia-check" onclick="toggleQuadraAula(2,this)">Q2</div>
+          <div class="dia-check" onclick="toggleQuadraAula(3,this)">Q3</div>
+          <div class="dia-check" onclick="toggleQuadraAula(4,this)">Q4</div>
+          <div class="dia-check" onclick="toggleQuadraAula(5,this)">Q5</div>
+          <div class="dia-check" onclick="toggleQuadraAula(6,this)">Q6</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Dias da semana</label>
+        <div class="dias-check">
+          <div class="dia-check" onclick="toggleDiaAula('seg',this)">Seg</div>
+          <div class="dia-check" onclick="toggleDiaAula('ter',this)">Ter</div>
+          <div class="dia-check" onclick="toggleDiaAula('qua',this)">Qua</div>
+          <div class="dia-check" onclick="toggleDiaAula('qui',this)">Qui</div>
+          <div class="dia-check" onclick="toggleDiaAula('sex',this)">Sex</div>
+          <div class="dia-check" onclick="toggleDiaAula('sab',this)">Sáb</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Início</label>
+          <select class="form-control" id="f-aula-inicio"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fim</label>
+          <select class="form-control" id="f-aula-fim"></select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Cor (opcional)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;" id="aula-cores">
+          <div onclick="selecionarCorAula('#5c6bc0',this)" style="width:28px;height:28px;border-radius:50%;background:#5c6bc0;cursor:pointer;border:3px solid #5c6bc0;"></div>
+          <div onclick="selecionarCorAula('#00897b',this)" style="width:28px;height:28px;border-radius:50%;background:#00897b;cursor:pointer;"></div>
+          <div onclick="selecionarCorAula('#e53935',this)" style="width:28px;height:28px;border-radius:50%;background:#e53935;cursor:pointer;"></div>
+          <div onclick="selecionarCorAula('#f57c00',this)" style="width:28px;height:28px;border-radius:50%;background:#f57c00;cursor:pointer;"></div>
+          <div onclick="selecionarCorAula('#6d4c41',this)" style="width:28px;height:28px;border-radius:50%;background:#6d4c41;cursor:pointer;"></div>
+        </div>
+      </div>
+
+      <!-- Lista de aulas cadastradas -->
+      <div id="aulas-lista-container" style="display:none;">
+        <label class="form-label" style="margin-top:8px;">Aulas cadastradas</label>
+        <div class="aulas-lista" id="aulas-lista"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModalAula()">Fechar</button>
+      <button class="btn btn-primary" onclick="salvarAula()" style="flex:1;">✓ Salvar Bloco</button>
+    </div>
+  </div>
+</div>
+
 <!-- NOTIFICATION -->
 <div class="notification" id="notification">
   <div class="notif-icon">✓</div>
@@ -1451,7 +1571,7 @@ const STATUS_OPTS = ['pago','pago','pago','reservado','disponivel','disponivel',
 function horariosParaDia(d) { return d === 'sab' ? HORARIOS_SABADO : HORARIOS_SEMANA; }
 
 const gradeData = {};
-for (let q = 0; q < 4; q++) {
+for (let q = 0; q < 6; q++) {
   gradeData[q] = {};
   TODOS_HORARIOS.forEach(h => {
     gradeData[q][h] = {};
@@ -1492,15 +1612,25 @@ function renderGrade() {
         html += `<td style="padding:3px 5px;"><div style="border-radius:6px;min-height:32px;background:rgba(0,0,0,0.04);display:flex;align-items:center;justify-content:center;"><span style="font-size:10px;color:#ccc;">—</span></div></td>`;
         return;
       }
-      const st = (data[h] && data[h][d]) || 'disponivel';
-      let inner = st === 'disponivel'
-        ? '<div class="slot-add">+</div>'
-        : st === 'pago'
-          ? `<div class="slot-name">${nP[Math.floor(Math.random()*nP.length)]}</div><div class="slot-cat">PAGO</div>`
-          : st === 'reservado'
-            ? `<div class="slot-name">${nR[Math.floor(Math.random()*nR.length)]}</div><div class="slot-cat">PEND.</div>`
-            : '<div class="slot-cat" style="font-size:9px">CANCEL</div>';
-      html += `<td class="slot s-${st}" onclick="slotClick('${h}','${d}','${st}')"><div class="slot-inner">${inner}</div></td>`;
+      const slotInfo = getSlotStatus(currentQuadra, h, d);
+      const st   = slotInfo.status;
+      const aula = slotInfo.aula;
+      let inner, tdClass, extraStyle = '';
+      if (st === 'aula') {
+        const cor = aula ? aula.cor : '#5c6bc0';
+        extraStyle = `style="background:${cor};"`;
+        inner = `<div class="slot-name" style="color:#fff;">${aula ? aula.nome.split('—')[0].trim() : 'Aula'}</div><div class="slot-cat" style="color:rgba(255,255,255,.7);">AULA</div>`;
+        html += `<td class="slot" onclick="showNotif('${aula ? aula.nome : 'Aula'} — ${h} 📚')"><div class="slot-inner" ${extraStyle}>${inner}</div></td>`;
+      } else {
+        inner = st === 'disponivel'
+          ? '<div class="slot-add">+</div>'
+          : st === 'pago'
+            ? `<div class="slot-name">${nP[Math.floor(Math.random()*nP.length)]}</div><div class="slot-cat">PAGO</div>`
+            : st === 'reservado'
+              ? `<div class="slot-name">${nR[Math.floor(Math.random()*nR.length)]}</div><div class="slot-cat">PEND.</div>`
+              : '<div class="slot-cat" style="font-size:9px">CANCEL</div>';
+        html += `<td class="slot s-${st}" onclick="slotClick('${h}','${d}','${st}')"><div class="slot-inner">${inner}</div></td>`;
+      }
     });
     html += '</tr>';
   });
@@ -1622,6 +1752,148 @@ function showNotif(msg) {
   el.classList.add('show');
   clearTimeout(_notifT);
   _notifT = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+
+// ════════════════════════════════
+// SISTEMA DE AULAS
+// ════════════════════════════════
+let AULAS = JSON.parse(localStorage.getItem('kale_aulas') || '[]');
+let _aulaCorSelecionada = '#5c6bc0';
+let _aulaDiasSelecionados = [];
+let _aulaQuadrasSelecionadas = [];
+
+// Popula selects de horário no modal de aula
+function popularHorariosAula() {
+  const slots = gerarSlots('07:00', '21:00');
+  ['f-aula-inicio','f-aula-fim'].forEach((id, i) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = slots.map(h => `<option>${h}</option>`).join('');
+    if (i === 1) sel.value = '08:00';
+  });
+}
+
+function abrirModalAula() {
+  _aulaDiasSelecionados = [];
+  _aulaQuadrasSelecionadas = [];
+  // Reset checks
+  document.querySelectorAll('#aula-quadras-check .dia-check, .dias-check .dia-check').forEach(el => el.classList.remove('checked'));
+  document.getElementById('f-aula-nome').value = '';
+  popularHorariosAula();
+  renderAulaLista();
+  document.getElementById('modal-aula').classList.add('open');
+}
+
+function fecharModalAula() {
+  document.getElementById('modal-aula').classList.remove('open');
+}
+
+function toggleDiaAula(dia, el) {
+  el.classList.toggle('checked');
+  if (_aulaDiasSelecionados.includes(dia)) {
+    _aulaDiasSelecionados = _aulaDiasSelecionados.filter(d => d !== dia);
+  } else {
+    _aulaDiasSelecionados.push(dia);
+  }
+}
+
+function toggleQuadraAula(q, el) {
+  el.classList.toggle('checked');
+  if (_aulaQuadrasSelecionadas.includes(q)) {
+    _aulaQuadrasSelecionadas = _aulaQuadrasSelecionadas.filter(x => x !== q);
+  } else {
+    _aulaQuadrasSelecionadas.push(q);
+  }
+}
+
+function selecionarCorAula(cor, el) {
+  _aulaCorSelecionada = cor;
+  document.querySelectorAll('#aula-cores div').forEach(d => d.style.border = 'none');
+  el.style.border = '3px solid ' + cor;
+}
+
+function salvarAula() {
+  const nome   = document.getElementById('f-aula-nome').value.trim();
+  const inicio = document.getElementById('f-aula-inicio').value;
+  const fim    = document.getElementById('f-aula-fim').value;
+
+  if (!nome) { showNotif('Informe o nome da turma ⚠️'); return; }
+  if (!_aulaDiasSelecionados.length) { showNotif('Selecione ao menos 1 dia ⚠️'); return; }
+  if (!_aulaQuadrasSelecionadas.length) { showNotif('Selecione ao menos 1 quadra ⚠️'); return; }
+  if (inicio >= fim) { showNotif('Horário de fim deve ser após o início ⚠️'); return; }
+
+  const aula = {
+    id:      Date.now(),
+    nome,
+    dias:    [..._aulaDiasSelecionados],
+    quadras: [..._aulaQuadrasSelecionadas],
+    inicio,
+    fim,
+    cor:     _aulaCorSelecionada,
+  };
+
+  AULAS.push(aula);
+  localStorage.setItem('kale_aulas', JSON.stringify(AULAS));
+  renderAulaLista();
+  showNotif('Aula "' + nome + '" salva! 📚');
+  renderGrade(); // atualiza grade imediatamente
+}
+
+function removerAula(id) {
+  AULAS = AULAS.filter(a => a.id !== id);
+  localStorage.setItem('kale_aulas', JSON.stringify(AULAS));
+  renderAulaLista();
+  renderGrade();
+  showNotif('Aula removida ✓');
+}
+
+function renderAulaLista() {
+  const container = document.getElementById('aulas-lista-container');
+  const lista     = document.getElementById('aulas-lista');
+  if (!container || !lista) return;
+  if (!AULAS.length) { container.style.display = 'none'; return; }
+  container.style.display = 'block';
+  const diasLabel = { seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb' };
+  lista.innerHTML = AULAS.map(a => `
+    <div class="aula-item">
+      <div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:${a.cor};flex-shrink:0;"></div>
+          <strong>${a.nome}</strong>
+        </div>
+        <div style="color:#5c6bc0;font-size:11px;">
+          Q${a.quadras.join(', Q')} &nbsp;·&nbsp;
+          ${a.dias.map(d => diasLabel[d]).join('/')} &nbsp;·&nbsp;
+          ${a.inicio}–${a.fim}
+        </div>
+      </div>
+      <button class="btn-remover-aula" onclick="removerAula(${a.id})">🗑</button>
+    </div>
+  `).join('');
+}
+
+// Retorna status do slot considerando aulas
+function getSlotStatus(quadraIdx, hora, diaKey) {
+  // quadraIdx é 0-based, quadras nas aulas são 1-based
+  const quadraNum = quadraIdx + 1;
+  const slots = gerarSlots('07:00', '21:00');
+
+  for (const aula of AULAS) {
+    if (!aula.quadras.includes(quadraNum)) continue;
+    if (!aula.dias.includes(diaKey)) continue;
+    // Verifica se hora está dentro do bloco
+    const slotsAula = gerarSlots(aula.inicio, aula.fim);
+    // Remove o último slot (fim é exclusive)
+    const slotsOcupados = slotsAula.slice(0, -1);
+    if (slotsOcupados.includes(hora)) {
+      return { status: 'aula', aula };
+    }
+  }
+
+  // Senão pega da gradeData (reservas mock/real)
+  const data = gradeData[quadraIdx];
+  return { status: (data[hora] && data[hora][diaKey]) || 'disponivel', aula: null };
 }
 
 // ════════════════════════════════
